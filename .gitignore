@@ -21,3 +21,5 @@ AGENTS.md
 # Local env files (keep .env.example tracked)
 .env
 .env*.local
+# Local VS Code settings
+.vscode/
