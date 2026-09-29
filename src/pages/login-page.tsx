@@ -8,6 +8,7 @@ import { RememberedAccount } from "@/components/auth/remembered-account";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { demoPersona, type LoginMethod, rememberedUserStorage } from "@/features/auth/auth-api";
 import { useAuth } from "@/features/auth/auth-context";
+import { HttpError, isBackendConfigured } from "@/lib/http";
 
 const REPO_URL = "https://github.com/tomtapia/admin-dashboard-template";
 
@@ -17,8 +18,12 @@ export const LoginPage = () => {
   const location = useLocation();
 
   const [pending, setPending] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [mode, setMode] = useState<"account" | "password">("account");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Against a real backend there is no "continue as" shortcut: credentials are
+  // required, so open directly on the email/password form.
+  const [mode, setMode] = useState<"account" | "password">(() =>
+    isBackendConfigured() ? "password" : "account",
+  );
   const [removed, setRemoved] = useState(false);
 
   const savedUser = rememberedUserStorage.get();
@@ -29,13 +34,20 @@ export const LoginPage = () => {
   const stateFrom = (location.state as { from?: string } | null)?.from;
   const redirectTo = stateFrom?.startsWith("/app") ? stateFrom : undefined;
 
-  const handleLogin = async (options?: { method?: LoginMethod; email?: string }) => {
+  const handleLogin = async (options?: {
+    method?: LoginMethod;
+    email?: string;
+    password?: string;
+  }) => {
     setPending(true);
-    setFailed(false);
+    setErrorMessage(null);
     try {
       await login({ ...options, redirectTo });
-    } catch {
-      setFailed(true);
+    } catch (error) {
+      // Prefer the backend's own message (NestJS returns `message: string |
+      // string[]`); fall back to a generic one only when there is nothing usable.
+      const detail = error instanceof HttpError ? error.detail : undefined;
+      setErrorMessage(detail || t("login.errorGeneric"));
     } finally {
       setPending(false);
     }
@@ -67,9 +79,11 @@ export const LoginPage = () => {
           ) : (
             <PasswordSignInForm
               pending={pending}
-              errorMessage={failed ? t("login.errorGeneric") : null}
+              errorMessage={errorMessage}
               hasSavedAccount={hasSavedAccount}
-              onSubmit={(values) => handleLogin({ method: "password", email: values.email })}
+              onSubmit={(values) =>
+                handleLogin({ method: "password", email: values.email, password: values.password })
+              }
               onUseSavedAccount={() => setMode("account")}
               onRemoveSavedAccount={() => {
                 rememberedUserStorage.clear();

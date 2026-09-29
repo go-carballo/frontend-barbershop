@@ -25,6 +25,7 @@ export type LoginOptions = {
   redirectTo?: string;
   method?: LoginMethod;
   email?: string;
+  password?: string;
 };
 
 type AuthContextValue = {
@@ -113,6 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const nextSession = await loginRequest({
           method: options?.method,
           email: options?.email,
+          password: options?.password,
         });
         sessionRef.current = nextSession;
         authStorage.set(nextSession);

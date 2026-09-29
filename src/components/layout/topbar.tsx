@@ -224,16 +224,20 @@ export const Topbar = ({ collapsed, onToggleSidebar }: TopbarProps) => {
               className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 transition-colors hover:bg-[var(--surface-panel)]"
             >
               <Avatar className="h-9 w-9">
-                <AvatarFallback>{session?.user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>
+                  {(session?.user.name || session?.user.email || "").slice(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div className="hidden text-left md:block">
-                <p className="text-sm font-medium leading-none">{session?.user.name}</p>
+                <p className="text-sm font-medium leading-none">
+                  {session?.user.name || session?.user.email}
+                </p>
                 <p className="mt-1 text-xs text-[var(--muted-foreground)]">{session?.user.role}</p>
               </div>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{session?.user.organization}</DropdownMenuLabel>
+            <DropdownMenuLabel>{session?.user.organization || "—"}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("/app/settings/user")}>
               {t("nav.userSettings")}

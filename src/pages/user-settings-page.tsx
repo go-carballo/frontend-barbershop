@@ -44,7 +44,7 @@ export const UserSettingsPage = () => {
           <dl className="space-y-4">
             <div>
               <dt className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                {session?.user.name}
+                {session?.user.name || session?.user.email}
               </dt>
               <dd className="mt-1 text-sm text-[var(--foreground)]">{session?.user.email}</dd>
             </div>
@@ -58,7 +58,7 @@ export const UserSettingsPage = () => {
               <dt className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
                 Organization
               </dt>
-              <dd className="mt-1 text-sm font-medium">{session?.user.organization}</dd>
+              <dd className="mt-1 text-sm font-medium">{session?.user.organization || "—"}</dd>
             </div>
           </dl>
         </SectionCard>

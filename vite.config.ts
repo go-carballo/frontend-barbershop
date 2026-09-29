@@ -14,6 +14,9 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: "./src/test/setup.ts",
+    env: {
+      VITE_API_BASE_URL: "",
+    },
     css: true,
     fileParallelism: false,
     testTimeout: 10000,

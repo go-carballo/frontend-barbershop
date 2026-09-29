@@ -31,6 +31,26 @@ export const defaultSession: Session = {
   expiresAt: 4102444800000,
 };
 
+/** JWT-shaped token whose claims mirror `defaultSession`, so login can decode it client-side. */
+export const defaultAccessToken: string = [
+  btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, ""),
+  btoa(
+    JSON.stringify({
+      sub: defaultSession.user.id,
+      email: defaultSession.user.email,
+      role: defaultSession.user.role,
+      exp: Math.floor(defaultSession.expiresAt / 1000),
+    }),
+  )
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, ""),
+  "mock-signature",
+].join(".");
+
 export const overviewPayload: OverviewPayload = {
   kpis: [
     {

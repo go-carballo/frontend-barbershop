@@ -1,4 +1,12 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+const readApiBaseUrl = () => (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+
+const API_BASE_URL = readApiBaseUrl();
+
+/**
+ * True when the app points at a real backend (`VITE_API_BASE_URL` is set).
+ * Read on every call so tests can stub the env before rendering the login page.
+ */
+export const isBackendConfigured = () => readApiBaseUrl() !== "";
 
 let activeTenantId: string | null = null;
 let getAccessToken: (() => string | null) | null = null;
@@ -17,6 +25,43 @@ export const setHttpAuth = (handlers: {
   getAccessToken = handlers.getToken;
   refreshAuthSession = handlers.refresh;
   onUnauthorized = handlers.unauthorized;
+};
+
+/**
+ * Thrown for a non-2xx response. `detail` carries the backend's own message so
+ * callers can surface it instead of a generic string.
+ */
+export class HttpError extends Error {
+  readonly status: number;
+  readonly detail?: string;
+
+  constructor(status: number, detail?: string, fallback = `Request failed with status ${status}`) {
+    super(detail ?? fallback);
+    this.name = "HttpError";
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
+/** Reads `{ message: string | string[] }` bodies; `undefined` when nothing usable. */
+const readErrorMessage = async (response: Response): Promise<string | undefined> => {
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    return undefined;
+  }
+  const message = (body as { message?: unknown } | null | undefined)?.message;
+  if (typeof message === "string") {
+    return message.trim() || undefined;
+  }
+  if (Array.isArray(message)) {
+    const parts = message.filter(
+      (item): item is string => typeof item === "string" && item.trim() !== "",
+    );
+    return parts.length > 0 ? parts.join(", ") : undefined;
+  }
+  return undefined;
 };
 
 const resolveUrl = (input: RequestInfo | URL): RequestInfo | URL => {
@@ -42,26 +87,32 @@ export const http = async <T>(
     headers["X-Tenant-Id"] = activeTenantId;
   }
 
+  const requestHeaders = new Headers(headers);
+  if (init?.headers) {
+    new Headers(init.headers).forEach((value, key) => {
+      requestHeaders.set(key, value);
+    });
+  }
+
   const response = await fetch(resolveUrl(input), {
-    headers: {
-      ...headers,
-      ...init?.headers,
-    },
     ...init,
+    headers: requestHeaders,
   });
 
-  if (response.status === 401 && !retried && refreshAuthSession) {
+  if (response.ok) {
+    return response.json() as Promise<T>;
+  }
+
+  // Only worth refreshing when we actually sent a token. A failed login has no
+  // token yet, so its backend message must reach the caller untouched.
+  if (response.status === 401 && !retried && token && refreshAuthSession) {
     const refreshed = await refreshAuthSession();
     if (refreshed) {
       return http<T>(input, init, true);
     }
     onUnauthorized?.();
-    throw new Error("Session expired");
+    throw new HttpError(401, await readErrorMessage(response), "Session expired");
   }
 
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-
-  return response.json() as Promise<T>;
+  throw new HttpError(response.status, await readErrorMessage(response));
 };

@@ -27,6 +27,8 @@ export const RememberedAccount = ({
   onSwitch,
 }: RememberedAccountProps) => {
   const { t } = useTranslation();
+  // The backend JWT does not carry a display name yet, so fall back to the email.
+  const displayName = name || email;
 
   return (
     <>
@@ -34,11 +36,11 @@ export const RememberedAccount = ({
         <div className="flex items-center gap-3">
           <Avatar>
             <AvatarFallback className="bg-[var(--accent)] text-[var(--accent-foreground)]">
-              {initialsOf(name)}
+              {initialsOf(displayName)}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-[var(--foreground)]">{name}</p>
+            <p className="truncate text-sm font-medium text-[var(--foreground)]">{displayName}</p>
             <p className="truncate text-xs text-[var(--muted-foreground)]">{email}</p>
           </div>
         </div>
@@ -51,7 +53,7 @@ export const RememberedAccount = ({
         >
           <span className="flex items-center gap-2">
             {pending ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-            {pending ? t("login.signingIn") : t("login.continueAs", { name })}
+            {pending ? t("login.signingIn") : t("login.continueAs", { name: displayName })}
           </span>
           {!pending ? <ArrowRight className="h-4 w-4" aria-hidden="true" /> : null}
         </Button>

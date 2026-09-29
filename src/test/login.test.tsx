@@ -1,7 +1,8 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
-import { defaultSession } from "@/mocks/data";
+import { afterEach, vi } from "vitest";
+import { defaultAccessToken } from "@/mocks/data";
 import { server } from "@/test/server";
 import { renderApp } from "@/test/test-app";
 
@@ -95,13 +96,12 @@ describe("login screen", () => {
     expect(screen.queryByRole("button", { name: /continue as/i })).not.toBeInTheDocument();
   });
 
-  it("sends the provider method for social sign-in buttons", async () => {
-    let method: string | undefined;
+  it("does not forward the provider method to the backend", async () => {
+    let body: Record<string, unknown> = {};
     server.use(
-      http.post("/api/auth/login", async ({ request }) => {
-        const body = (await request.json()) as { method?: string };
-        method = body.method;
-        return HttpResponse.json(defaultSession);
+      http.post("/auth/login", async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ access_token: defaultAccessToken });
       }),
     );
     const user = userEvent.setup();
@@ -109,9 +109,115 @@ describe("login screen", () => {
 
     await user.click(await screen.findByRole("button", { name: /google/i }));
 
-    expect(method).toBe("google");
+    expect(body).not.toHaveProperty("method");
     expect(
       await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("login screen against a configured backend", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  const renderWithBackend = () => {
+    vi.stubEnv("VITE_API_BASE_URL", "http://localhost:3000");
+    return renderApp({ initialEntries: ["/login"] });
+  };
+
+  const fillCredentials = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.type(await screen.findByLabelText(/email/i), "admin@barbershop.com");
+    await user.type(screen.getByLabelText(/password/i), "Admin123!!");
+  };
+
+  it("opens directly on the email/password form", async () => {
+    rememberAlex();
+    renderWithBackend();
+
+    expect(await screen.findByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /continue as/i })).not.toBeInTheDocument();
+  });
+
+  it("sends exactly email and password to the backend", async () => {
+    let body: Record<string, unknown> = {};
+    server.use(
+      http.post("/auth/login", async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ access_token: defaultAccessToken });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithBackend();
+
+    await fillCredentials(user);
+    await user.click(screen.getByRole("button", { name: /^sign in$/i }));
+
+    expect(body).toEqual({ email: "admin@barbershop.com", password: "Admin123!!" });
+    expect(
+      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+    ).toBeInTheDocument();
+  });
+
+  it("joins an array of backend validation messages", async () => {
+    server.use(
+      http.post("/auth/login", () =>
+        HttpResponse.json(
+          {
+            message: ["password should not be empty", "password must be a string"],
+            error: "Bad Request",
+            statusCode: 400,
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithBackend();
+
+    await fillCredentials(user);
+    await user.click(screen.getByRole("button", { name: /^sign in$/i }));
+
+    expect(
+      await screen.findByText(
+        "password should not be empty, password must be a string",
+        {},
+        { timeout: 3000 },
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a single backend message as-is", async () => {
+    server.use(
+      http.post("/auth/login", () =>
+        HttpResponse.json(
+          { message: "Invalid credentials", error: "Unauthorized", statusCode: 401 },
+          { status: 401 },
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithBackend();
+
+    await fillCredentials(user);
+    await user.click(screen.getByRole("button", { name: /^sign in$/i }));
+
+    expect(
+      await screen.findByText("Invalid credentials", {}, { timeout: 3000 }),
+    ).toBeInTheDocument();
+  });
+
+  it("falls back to a generic message when the backend sends nothing usable", async () => {
+    server.use(http.post("/auth/login", () => new HttpResponse(null, { status: 500 })));
+    const user = userEvent.setup();
+    renderWithBackend();
+
+    await fillCredentials(user);
+    await user.click(screen.getByRole("button", { name: /^sign in$/i }));
+
+    expect(
+      await screen.findByText(/we couldn't sign you in\.?/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 });

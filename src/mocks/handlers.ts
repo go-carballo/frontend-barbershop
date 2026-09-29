@@ -4,6 +4,7 @@ import {
   apiKeysPayload,
   billingPayload,
   calendarPayload,
+  defaultAccessToken,
   defaultSession,
   integrationsPayload,
   mailPayload,
@@ -66,10 +67,10 @@ export const handlers = [
     await delay(250);
     return HttpResponse.json(activeSession);
   }),
-  http.post("/api/auth/login", async () => {
+  http.post("/auth/login", async () => {
     await delay(450);
     activeSession = defaultSession;
-    return HttpResponse.json(activeSession);
+    return HttpResponse.json({ access_token: defaultAccessToken });
   }),
   http.post("/api/auth/logout", async () => {
     await delay(120);
