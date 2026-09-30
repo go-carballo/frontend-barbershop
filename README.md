@@ -69,7 +69,7 @@ Then:
 2. Click **Continue as Avery Stone** — or switch to the password form or a mock Google/Apple button — every sign-in path issues a real-shaped access/refresh token session (no real credentials needed).
 3. You land on the Overview. Press **⌘K / Ctrl+K** to explore the command palette, or switch workspaces from the top of the sidebar.
 
-The MSW worker starts automatically unless a real backend is configured via `VITE_API_BASE_URL`, so all data, invites, and mutations work immediately against seeded fixtures.
+The MSW worker starts automatically, so all data, invites, and mutations work immediately against seeded fixtures — even when `VITE_API_BASE_URL` points at a real backend. Only the routes listed in `REAL_API_ROUTES` (`src/lib/http.ts`) are sent there; everything else stays relative and is served by MSW, so you can migrate endpoints one at a time.
 
 ## Usage & Examples
 
@@ -94,11 +94,12 @@ cp .env.example .env.local
 
 ```dotenv
 VITE_API_BASE_URL=https://api.example.com
+VITE_ENABLE_MOCK_API=true      # optional: set to "false" to disable MSW entirely
 VITE_SENTRY_DSN=            # optional: enables Sentry error reporting
 VITE_APP_ENV=production     # optional: tags Sentry events
 ```
 
-Build and deploy `dist/` to any static host (Vercel, Netlify, S3 + CloudFront…). As soon as `VITE_API_BASE_URL` is set at build time, the MSW mock layer stays off and all requests go straight to your backend — just implement the same `/api/*` paths defined in [`src/mocks/handlers.ts`](src/mocks/handlers.ts). Without it (as on the live demo), the app runs fully interactive against the seeded mocks.
+Endpoints are migrated one at a time: add the path to `REAL_API_ROUTES` in [`src/lib/http.ts`](src/lib/http.ts) and it goes to your backend instead of MSW. Paths not listed there keep being served by the mocks. Build and deploy `dist/` to any static host (Vercel, Netlify, S3 + CloudFront…) — implement the same `/api/*` paths defined in [`src/mocks/handlers.ts`](src/mocks/handlers.ts) as you move them over, and set `VITE_ENABLE_MOCK_API=false` once the whole surface is real. Without `VITE_API_BASE_URL` (as on the live demo), the app runs fully interactive against the seeded mocks.
 
 ### Restrict a feature by role
 

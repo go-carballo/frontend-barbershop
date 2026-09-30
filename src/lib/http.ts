@@ -1,4 +1,4 @@
-const readApiBaseUrl = () => (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+export const readApiBaseUrl = () => (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
 
 const API_BASE_URL = readApiBaseUrl();
 
@@ -7,6 +7,22 @@ const API_BASE_URL = readApiBaseUrl();
  * Read on every call so tests can stub the env before rendering the login page.
  */
 export const isBackendConfigured = () => readApiBaseUrl() !== "";
+
+/**
+ * Routes that must always reach the real backend, even while the rest of the app
+ * still runs on the MSW demo layer.
+ *
+ * Hybrid mode: `VITE_API_BASE_URL` is applied *only* to these paths. Every other
+ * request stays relative, and because MSW matches relative handler paths against
+ * the app origin, it keeps serving the template data locally instead of leaking
+ * demo traffic to NestJS.
+ *
+ * Migrating an endpoint to the real API is a one-line change here.
+ */
+export const REAL_API_ROUTES = ["/auth/login"] as const;
+
+const isRealApiRoute = (path: string) =>
+  REAL_API_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
 
 let activeTenantId: string | null = null;
 let getAccessToken: (() => string | null) | null = null;
@@ -65,7 +81,14 @@ const readErrorMessage = async (response: Response): Promise<string | undefined>
 };
 
 const resolveUrl = (input: RequestInfo | URL): RequestInfo | URL => {
-  if (API_BASE_URL && typeof input === "string" && !/^https?:\/\//.test(input)) {
+  // Relative inputs stay relative on purpose: MSW matches them against the app
+  // origin, so only the routes in REAL_API_ROUTES ever leave for the backend.
+  if (
+    API_BASE_URL &&
+    typeof input === "string" &&
+    !/^https?:\/\//.test(input) &&
+    isRealApiRoute(input)
+  ) {
     return `${API_BASE_URL}${input.startsWith("/") ? "" : "/"}${input}`;
   }
   return input;

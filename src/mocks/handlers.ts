@@ -67,6 +67,10 @@ export const handlers = [
     await delay(250);
     return HttpResponse.json(activeSession);
   }),
+  // Demo-only sign-in. `/auth/login` is listed in REAL_API_ROUTES, so with a
+  // backend configured this relative handler is never reached: the request is
+  // sent to NestJS and `mocks/browser.ts` passthroughs it. It only answers in
+  // the pure-mock mode (no `VITE_API_BASE_URL`) used by tests and the demo.
   http.post("/auth/login", async () => {
     await delay(450);
     activeSession = defaultSession;
