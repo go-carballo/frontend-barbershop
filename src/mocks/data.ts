@@ -27,7 +27,6 @@ export const defaultSession: Session = {
   },
   isAuthenticated: true,
   accessToken: "mock-access-token",
-  refreshToken: "mock-refresh-token",
   expiresAt: 4102444800000,
 };
 

@@ -19,27 +19,28 @@ export const isBackendConfigured = () => readApiBaseUrl() !== "";
  *
  * Migrating an endpoint to the real API is a one-line change here.
  */
-export const REAL_API_ROUTES = ["/auth/login"] as const;
+export const REAL_API_ROUTES = ["/auth/login", "/auth/profile"] as const;
 
 const isRealApiRoute = (path: string) =>
   REAL_API_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
 
 let activeTenantId: string | null = null;
 let getAccessToken: (() => string | null) | null = null;
-let refreshAuthSession: (() => Promise<boolean>) | null = null;
 let onUnauthorized: (() => void) | null = null;
 
 export const setActiveTenantId = (id: string | null) => {
   activeTenantId = id;
 };
 
+/**
+ * The backend has no refresh endpoint, so there is nothing to retry: a 401 on a
+ * token-bearing request ends the session through `unauthorized`.
+ */
 export const setHttpAuth = (handlers: {
   getToken: () => string | null;
-  refresh: () => Promise<boolean>;
   unauthorized: () => void;
 }) => {
   getAccessToken = handlers.getToken;
-  refreshAuthSession = handlers.refresh;
   onUnauthorized = handlers.unauthorized;
 };
 
@@ -94,11 +95,7 @@ const resolveUrl = (input: RequestInfo | URL): RequestInfo | URL => {
   return input;
 };
 
-export const http = async <T>(
-  input: RequestInfo | URL,
-  init?: RequestInit,
-  retried = false,
-): Promise<T> => {
+export const http = async <T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -126,13 +123,9 @@ export const http = async <T>(
     return response.json() as Promise<T>;
   }
 
-  // Only worth refreshing when we actually sent a token. A failed login has no
-  // token yet, so its backend message must reach the caller untouched.
-  if (response.status === 401 && !retried && token && refreshAuthSession) {
-    const refreshed = await refreshAuthSession();
-    if (refreshed) {
-      return http<T>(input, init, true);
-    }
+  // Only tear the session down when we actually sent a token. A failed login has
+  // no token yet, so its backend message must reach the caller untouched.
+  if (response.status === 401 && token) {
     onUnauthorized?.();
     throw new HttpError(401, await readErrorMessage(response), "Session expired");
   }

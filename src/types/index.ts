@@ -13,12 +13,12 @@ export type Session = {
     id: string;
     name: string;
     email: string;
-    role: "Owner" | "Admin" | "Manager";
+    /** Normalized to `AppRole` by `normalizeRole`; see `lib/rbac.ts`. */
+    role?: AppRole;
     organization: string;
   };
   isAuthenticated: boolean;
   accessToken: string;
-  refreshToken?: string;
   expiresAt: number;
 };
 

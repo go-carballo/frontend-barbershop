@@ -1,4 +1,5 @@
 import { http } from "@/lib/http";
+import { normalizeRole } from "@/lib/rbac";
 import type { Session } from "@/types";
 
 const SESSION_STORAGE_KEY = "admin-dashboard-template:session";
@@ -15,6 +16,13 @@ export type LoginPayload = {
 
 export type LoginResponse = {
   access_token: string;
+};
+
+/** `GET /auth/profile` returns the JWT claims as a user object. */
+export type ProfileResponse = {
+  id: string;
+  email: string;
+  role: string;
 };
 
 export type RememberedUser = {
@@ -87,7 +95,7 @@ const sessionFromToken = (accessToken: string): Session => {
   const claims = decodeJwtClaims(accessToken);
   const sub = typeof claims.sub === "string" ? claims.sub : "";
   const email = typeof claims.email === "string" ? claims.email : "";
-  const role = typeof claims.role === "string" ? claims.role : "";
+  const role = normalizeRole(claims.role);
   const exp = typeof claims.exp === "number" ? claims.exp : 0;
 
   return {
@@ -95,7 +103,7 @@ const sessionFromToken = (accessToken: string): Session => {
       id: sub,
       name: "",
       email,
-      role: role as Session["user"]["role"],
+      role,
       organization: "",
     },
     isAuthenticated: true,
@@ -115,10 +123,27 @@ export const loginRequest = (payload: LoginPayload = {}) =>
     return sessionFromToken(access_token);
   });
 
-export const logoutRequest = () =>
-  http<{ success: boolean }>("/api/auth/logout", { method: "POST" });
+/**
+ * The only session-introspection endpoint the backend exposes. Used on boot to
+ * re-hydrate the session from a stored token, and to confirm the token is still
+ * accepted before the user is trusted.
+ */
+export const profileRequest = () => http<ProfileResponse>("/auth/profile");
 
-export const refreshRequest = () => http<Session>("/api/auth/refresh", { method: "POST" });
+/**
+ * Merges the profile returned by `GET /auth/profile` into an existing session.
+ * The backend only exposes `id`, `email` and `role`, so `name`/`organization`
+ * keep whatever the token already carried.
+ */
+export const mergeProfile = (session: Session, profile: ProfileResponse): Session => ({
+  ...session,
+  user: {
+    ...session.user,
+    id: profile.id || session.user.id,
+    email: profile.email || session.user.email,
+    role: normalizeRole(profile.role) ?? session.user.role,
+  },
+});
 
 export const isSessionExpired = (session: Session | null): boolean => {
   if (!session) {

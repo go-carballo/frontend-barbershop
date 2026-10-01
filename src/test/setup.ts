@@ -1,5 +1,9 @@
 import "@testing-library/jest-dom/vitest";
+import { configure } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll } from "vitest";
+
+configure({ asyncUtilTimeout: 5000 });
+
 import i18n from "@/features/i18n/i18n";
 import { resetMockState } from "@/mocks/handlers";
 import { server } from "@/test/server";

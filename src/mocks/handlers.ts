@@ -5,7 +5,6 @@ import {
   billingPayload,
   calendarPayload,
   defaultAccessToken,
-  defaultSession,
   integrationsPayload,
   mailPayload,
   notificationsPayload,
@@ -25,6 +24,7 @@ import type {
   Integration,
   MailMessage,
   NotificationItem,
+  Session,
   SettingsPayload,
   TeamMember,
   Tenant,
@@ -32,7 +32,6 @@ import type {
   UserRecord,
 } from "@/types";
 
-let activeSession = defaultSession;
 let activeSettings = settingsPayload;
 let activeNotifications: NotificationItem[] = notificationsPayload;
 let activeTeam: TeamMember[] = teamPayload;
@@ -45,7 +44,6 @@ let activeMail: MailMessage[] = mailPayload;
 let activeCalendar: CalendarEvent[] = calendarPayload;
 
 export const resetMockState = () => {
-  activeSession = defaultSession;
   activeSettings = settingsPayload;
   activeNotifications = notificationsPayload;
   activeTeam = teamPayload;
@@ -63,32 +61,33 @@ const readQuery = (request: Request, key: string) =>
 
 export const handlers = [
   // Auth
-  http.get("/api/auth/session", async () => {
-    await delay(250);
-    return HttpResponse.json(activeSession);
-  }),
   // Demo-only sign-in. `/auth/login` is listed in REAL_API_ROUTES, so with a
   // backend configured this relative handler is never reached: the request is
   // sent to NestJS and `mocks/browser.ts` passthroughs it. It only answers in
   // the pure-mock mode (no `VITE_API_BASE_URL`) used by tests and the demo.
   http.post("/auth/login", async () => {
     await delay(450);
-    activeSession = defaultSession;
     return HttpResponse.json({ access_token: defaultAccessToken });
   }),
-  http.post("/api/auth/logout", async () => {
+  // Demo stand-in for the real `GET /auth/profile`, which is listed in
+  // REAL_API_ROUTES and therefore only reached in pure-mock mode. The real
+  // endpoint echoes the claims of the presented token, so the mock mirrors the
+  // session the app is currently holding and answers 401 when there is none.
+  http.get("/auth/profile", async () => {
     await delay(120);
-    activeSession = { ...defaultSession, isAuthenticated: false };
-    return HttpResponse.json({ success: true });
-  }),
-  http.post("/api/auth/refresh", async () => {
-    await delay(300);
-    activeSession = {
-      ...defaultSession,
-      accessToken: "mock-access-token-refreshed",
-      expiresAt: Date.now() + 1000 * 60 * 60,
-    };
-    return HttpResponse.json(activeSession);
+    const raw = window.localStorage.getItem("admin-dashboard-template:session");
+    const stored = raw ? (JSON.parse(raw) as Session) : null;
+    if (!stored?.accessToken) {
+      return HttpResponse.json(
+        { message: "Unauthorized", error: "Unauthorized", statusCode: 401 },
+        { status: 401 },
+      );
+    }
+    return HttpResponse.json({
+      id: stored.user.id,
+      email: stored.user.email,
+      role: stored.user.role,
+    });
   }),
 
   // Dashboard

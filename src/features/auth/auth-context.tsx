@@ -14,8 +14,8 @@ import {
   isSessionExpired,
   type LoginMethod,
   loginRequest,
-  logoutRequest,
-  refreshRequest,
+  mergeProfile,
+  profileRequest,
   rememberedUserStorage,
 } from "@/features/auth/auth-api";
 import { setHttpAuth } from "@/lib/http";
@@ -32,35 +32,35 @@ type AuthContextValue = {
   session: Session | null;
   isAuthenticated: boolean;
   login: (options?: LoginOptions) => Promise<void>;
+  /** Frontend-only sign-out: drops the token and the stored session. */
   logout: () => Promise<void>;
-  refreshSession: () => Promise<boolean>;
+  /** Re-reads `GET /auth/profile` for the current token. */
+  loadProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/**
+ * Restores the stored session so a reload keeps the user signed in, but never
+ * with a token the backend already considers expired.
+ */
+const readStoredSession = (): Session | null => {
+  const stored = authStorage.get();
+  if (!stored || isSessionExpired(stored)) {
+    authStorage.clear();
+    return null;
+  }
+  return stored;
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
-  const [session, setSession] = useState<Session | null>(() => authStorage.get());
+  const [session, setSession] = useState<Session | null>(readStoredSession);
   const sessionRef = useRef<Session | null>(session);
 
   useEffect(() => {
     sessionRef.current = session;
   }, [session]);
-
-  const refreshSession = useMemo(
-    () => async (): Promise<boolean> => {
-      try {
-        const next = await refreshRequest();
-        sessionRef.current = next;
-        authStorage.set(next);
-        setSession(next);
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    [],
-  );
 
   const rememberCurrentUser = useCallback(() => {
     const current = sessionRef.current;
@@ -69,42 +69,68 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const logout = useMemo(
-    () => async (): Promise<void> => {
-      await logoutRequest().catch(() => undefined);
-      rememberCurrentUser();
-      authStorage.clear();
-      sessionRef.current = null;
-      setSession(null);
+  const clearSession = useCallback(() => {
+    rememberCurrentUser();
+    authStorage.clear();
+    sessionRef.current = null;
+    setSession(null);
+  }, [rememberCurrentUser]);
+
+  const signOut = useMemo(
+    () => () => {
+      // The backend exposes no `/auth/logout`, so ending the session here is the
+      // complete operation.
+      clearSession();
       navigate("/login", { replace: true });
     },
-    [navigate, rememberCurrentUser],
+    [clearSession, navigate],
   );
 
-  const unauthorized = useMemo(
-    () => () => {
-      rememberCurrentUser();
-      authStorage.clear();
-      sessionRef.current = null;
-      setSession(null);
-      navigate("/login", { replace: true });
-    },
-    [navigate, rememberCurrentUser],
-  );
+  const logout = useMemo(() => async (): Promise<void> => signOut(), [signOut]);
 
   useEffect(() => {
     setHttpAuth({
       getToken: () => sessionRef.current?.accessToken ?? null,
-      refresh: refreshSession,
-      unauthorized,
+      unauthorized: signOut,
     });
-  }, [refreshSession, unauthorized]);
+  }, [signOut]);
 
-  useEffect(() => {
-    if (session?.isAuthenticated && isSessionExpired(session) && session.refreshToken) {
-      void refreshSession();
+  /**
+   * Confirms the current token against `GET /auth/profile` and merges the
+   * server's view of the user (id, email, normalized role) into the session.
+   * A 401 is already handled by `lib/http`, which clears the session and
+   * redirects to `/login`; there is no refresh to attempt.
+   */
+  const loadProfile = useCallback(async (): Promise<void> => {
+    const current = sessionRef.current;
+    if (!current?.accessToken) {
+      return;
     }
-  }, [session, refreshSession]);
+    const profile = await profileRequest();
+    if (sessionRef.current?.accessToken !== current.accessToken) {
+      // Signed out (or re-authenticated) while the request was in flight.
+      return;
+    }
+    const next = mergeProfile(current, profile);
+    sessionRef.current = next;
+    authStorage.set(next);
+    setSession(next);
+  }, []);
+
+  /**
+   * Revalidate the active token with `GET /auth/profile`, on boot and after each
+   * sign-in. The stored token keeps the session alive across reloads on its own;
+   * this only refreshes the cached user. Failures are swallowed on purpose: an
+   * expired token has already signed the user out inside `http`, and any other
+   * error (500, offline) should not throw away a valid session.
+   */
+  const activeToken = session?.accessToken;
+  useEffect(() => {
+    if (!activeToken) {
+      return;
+    }
+    void loadProfile().catch(() => undefined);
+  }, [activeToken, loadProfile]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -126,9 +152,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         navigate(options?.redirectTo ?? "/app/overview", { replace: true });
       },
       logout,
-      refreshSession,
+      loadProfile,
     }),
-    [navigate, session, logout, refreshSession],
+    [navigate, session, logout, loadProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
