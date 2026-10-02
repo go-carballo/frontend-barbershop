@@ -9,6 +9,7 @@ type DetailDrawerProps = {
   description?: string;
   children: ReactNode;
   footer?: ReactNode;
+  closeLabel?: string;
 };
 
 export function DetailDrawer({
@@ -18,10 +19,12 @@ export function DetailDrawer({
   description,
   children,
   footer,
+  closeLabel,
 }: DetailDrawerProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        closeLabel={closeLabel}
         className={cn(
           "left-auto right-4 top-4 h-[calc(100vh-2rem)] w-[min(92vw,28rem)] translate-x-0 translate-y-0 overflow-y-auto p-0",
         )}

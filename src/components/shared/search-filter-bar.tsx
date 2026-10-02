@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,11 @@ export type FilterChip = {
 type SearchFilterBarProps = {
   value: string;
   onChange: (value: string) => void;
+  onApply?: () => void;
+  onClear?: () => void;
+  clearLabel?: string;
+  filtersLabel?: string;
+  formatResultCount?: (count: number) => string;
   resultCount?: number;
   title?: string;
   description?: string;
@@ -27,6 +32,11 @@ export const SearchFilterBar = ({
   value,
   onChange,
   resultCount,
+  onApply,
+  onClear,
+  clearLabel = "Clear search",
+  filtersLabel = "Filters",
+  formatResultCount,
   title = "Search and filter",
   description = "Narrow the list down and keep follow-up work visible without opening a detail view.",
   searchLabel = "Search",
@@ -41,13 +51,15 @@ export const SearchFilterBar = ({
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-sm font-semibold">{title}</p>
         {typeof resultCount === "number" ? (
-          <Badge variant="outline">{resultCount} visible</Badge>
+          <Badge variant="outline">
+            {formatResultCount ? formatResultCount(resultCount) : `${resultCount} visible`}
+          </Badge>
         ) : null}
       </div>
       <p className="max-w-md text-sm text-[var(--muted-foreground)]">{description}</p>
       {chips && onChipChange ? (
         <fieldset>
-          <legend className="sr-only">Filters</legend>
+          <legend className="sr-only">{filtersLabel}</legend>
           <div className="flex flex-wrap gap-2">
             {chips.map((chip) => {
               const isActive = activeChip === chip.id;
@@ -90,9 +102,31 @@ export const SearchFilterBar = ({
           aria-label={searchLabel}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="pl-9"
+          onBlur={onApply}
+          onKeyDown={(event) => {
+            if (onApply && event.key === "Enter" && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              onApply?.();
+            }
+          }}
+          className={cn(
+            "pl-9",
+            onClear && "pr-10 [&::-webkit-search-cancel-button]:appearance-none",
+          )}
           placeholder={searchPlaceholder ?? searchLabel}
         />
+        {onClear && value && (
+          <button
+            type="button"
+            aria-label={clearLabel}
+            title={clearLabel}
+            onPointerDown={(event) => event.preventDefault()}
+            onClick={onClear}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
       </div>
     </div>
   </div>

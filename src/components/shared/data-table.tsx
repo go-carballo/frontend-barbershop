@@ -19,6 +19,13 @@ type DataTableProps<T> = {
   onRowClick?: (row: T) => void;
   getRowLabel?: (row: T) => string;
   pageSize?: number;
+  pagination?: { page: number; total: number; onPageChange: (page: number) => void };
+  labels?: {
+    range: (start: number, end: number, total: number) => string;
+    page: (page: number, count: number) => string;
+    previous: string;
+    next: string;
+  };
   caption?: string;
   className?: string;
 };
@@ -34,13 +41,18 @@ export function DataTable<T>({
   pageSize = DEFAULT_PAGE_SIZE,
   caption,
   className,
+  pagination,
+  labels,
 }: DataTableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(0);
 
-  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
-  const safePage = Math.min(page, pageCount - 1);
+  const total = pagination?.total ?? rows.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = pagination ? pagination.page - 1 : Math.min(page, pageCount - 1);
+  const changePage = (next: number) =>
+    pagination ? pagination.onPageChange(next + 1) : setPage(next);
 
   const sortedRows = useMemo(() => {
     if (!sortKey) return rows;
@@ -55,7 +67,9 @@ export function DataTable<T>({
     });
   }, [rows, columns, sortKey, sortDir]);
 
-  const visibleRows = sortedRows.slice(safePage * pageSize, (safePage + 1) * pageSize);
+  const visibleRows = pagination
+    ? rows
+    : sortedRows.slice(safePage * pageSize, (safePage + 1) * pageSize);
 
   const toggleSort = (key: string) => {
     setPage(0);
@@ -68,7 +82,7 @@ export function DataTable<T>({
   };
 
   const handleRowKeyDown = (event: KeyboardEvent<HTMLTableRowElement>, row: T) => {
-    if (!onRowClick) return;
+    if (!onRowClick || event.target !== event.currentTarget) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       onRowClick(row);
@@ -76,7 +90,7 @@ export function DataTable<T>({
   };
 
   const rangeStart = rows.length === 0 ? 0 : safePage * pageSize + 1;
-  const rangeEnd = Math.min((safePage + 1) * pageSize, rows.length);
+  const rangeEnd = Math.min(safePage * pageSize + visibleRows.length, total);
 
   return (
     <div
@@ -167,7 +181,9 @@ export function DataTable<T>({
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] px-5 py-3 text-xs text-[var(--muted-foreground)]">
         <span>
-          Showing {rangeStart}–{rangeEnd} of {rows.length}
+          {labels
+            ? labels.range(rangeStart, rangeEnd, total)
+            : `Showing ${rangeStart}–${rangeEnd} of ${total}`}
           {caption ? ` · ${caption}` : ""}
         </span>
         {pageCount > 1 ? (
@@ -175,21 +191,23 @@ export function DataTable<T>({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((value) => Math.max(0, value - 1))}
+              onClick={() => changePage(Math.max(0, safePage - 1))}
               disabled={safePage === 0}
             >
-              Previous
+              {labels?.previous ?? "Previous"}
             </Button>
             <span aria-live="polite">
-              Page {safePage + 1} of {pageCount}
+              {labels
+                ? labels.page(safePage + 1, pageCount)
+                : `Page ${safePage + 1} of ${pageCount}`}
             </span>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}
+              onClick={() => changePage(Math.min(pageCount - 1, safePage + 1))}
               disabled={safePage >= pageCount - 1}
             >
-              Next
+              {labels?.next ?? "Next"}
             </Button>
           </div>
         ) : null}

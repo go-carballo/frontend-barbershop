@@ -1,5 +1,6 @@
 {
   "nav": {
+    "customers": "Clientes",
     "overview": "Vue d'ensemble",
     "analytics": "Analytique",
     "mail": "Messagerie",

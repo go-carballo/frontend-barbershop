@@ -19,10 +19,13 @@ export const isBackendConfigured = () => readApiBaseUrl() !== "";
  *
  * Migrating an endpoint to the real API is a one-line change here.
  */
-export const REAL_API_ROUTES = ["/auth/login", "/auth/profile"] as const;
+export const REAL_API_ROUTES = ["/auth/login", "/auth/profile", "/customers"] as const;
 
 const isRealApiRoute = (path: string) =>
-  REAL_API_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
+  REAL_API_ROUTES.some((route) => {
+    const pathname = path.split(/[?#]/)[0];
+    return pathname === route || pathname.startsWith(`${route}/`);
+  });
 
 let activeTenantId: string | null = null;
 let getAccessToken: (() => string | null) | null = null;
@@ -120,7 +123,8 @@ export const http = async <T>(input: RequestInfo | URL, init?: RequestInit): Pro
   });
 
   if (response.ok) {
-    return response.json() as Promise<T>;
+    const body = await response.text();
+    return (body ? JSON.parse(body) : undefined) as T;
   }
 
   // Only tear the session down when we actually sent a token. A failed login has

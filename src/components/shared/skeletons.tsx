@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 type SkeletonGroupProps = {
+  loadingLabel?: string;
   count?: number;
   className?: string;
 };
@@ -49,14 +50,14 @@ const TABLE_ROW_CELLS = [
   { id: "cell-e", width: "10%" },
 ];
 
-export const TableSkeleton = ({ count = 6, className }: SkeletonGroupProps) => (
+export const TableSkeleton = ({ count = 6, className, loadingLabel }: SkeletonGroupProps) => (
   <div
     className={cn(
       "overflow-hidden rounded-[1rem] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]",
       className,
     )}
     role="status"
-    aria-label="Loading table"
+    aria-label={loadingLabel ?? "Loading table"}
   >
     <div
       aria-hidden="true"
@@ -75,7 +76,7 @@ export const TableSkeleton = ({ count = 6, className }: SkeletonGroupProps) => (
         </div>
       ))}
     </div>
-    <span className="sr-only">Loading content</span>
+    <span className="sr-only">{loadingLabel ?? "Loading content"}</span>
   </div>
 );
 

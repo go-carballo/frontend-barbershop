@@ -5,10 +5,17 @@ type StatePanelProps = {
   title: string;
   description: string;
   kind: "loading" | "error";
+  retryLabel?: string;
   onRetry?: () => void;
 };
 
-export const StatePanel = ({ title, description, kind, onRetry }: StatePanelProps) => (
+export const StatePanel = ({
+  title,
+  description,
+  kind,
+  onRetry,
+  retryLabel = "Try again",
+}: StatePanelProps) => (
   <div
     className="flex min-h-56 flex-col items-center justify-center gap-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface)] text-center"
     role={kind === "error" ? "alert" : "status"}
@@ -27,7 +34,7 @@ export const StatePanel = ({ title, description, kind, onRetry }: StatePanelProp
     {kind === "error" && onRetry ? (
       <Button variant="outline" size="sm" onClick={onRetry}>
         <RotateCw className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
-        Try again
+        {retryLabel}
       </Button>
     ) : null}
   </div>

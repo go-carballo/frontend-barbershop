@@ -14,6 +14,9 @@ const OverviewPage = lazy(() =>
 const AnalyticsPage = lazy(() =>
   import("@/pages/analytics-page").then((module) => ({ default: module.AnalyticsPage })),
 );
+const CustomersPage = lazy(() =>
+  import("@/pages/customers-page").then((module) => ({ default: module.CustomersPage })),
+);
 const UsersPage = lazy(() =>
   import("@/pages/users-page").then((module) => ({ default: module.UsersPage })),
 );
@@ -76,6 +79,14 @@ export const AppRouter = () => (
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/app/overview" element={<OverviewPage />} />
+          <Route
+            path="/app/customers"
+            element={
+              <RoleRoute roles={["Owner", "Admin", "Manager"]}>
+                <CustomersPage />
+              </RoleRoute>
+            }
+          />
           <Route path="/app/analytics" element={<AnalyticsPage />} />
           <Route path="/app/mail" element={<MailPage />} />
           <Route path="/app/mail/sent" element={<MailPage />} />

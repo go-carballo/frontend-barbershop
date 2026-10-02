@@ -12,7 +12,10 @@ const apiBaseUrl = readApiBaseUrl();
  * SPA and the API end up sharing an origin behind a proxy.
  */
 const realApiHandlers = apiBaseUrl
-  ? REAL_API_ROUTES.map((route) => http.all(`${apiBaseUrl}${route}`, () => passthrough()))
+  ? REAL_API_ROUTES.flatMap((route) => [
+      http.all(`${apiBaseUrl}${route}`, () => passthrough()),
+      http.all(`${apiBaseUrl}${route}/*`, () => passthrough()),
+    ])
   : [];
 
 // Demo handlers come last. Anything they do not cover falls through to the

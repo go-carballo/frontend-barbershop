@@ -67,6 +67,12 @@ export const navGroups: NavGroup[] = [
             icon: "Users",
             roles: ["Owner", "Admin", "Manager"],
           },
+          {
+            title: "nav.customers",
+            href: "/app/customers",
+            icon: "Users",
+            roles: ["Owner", "Admin", "Manager"],
+          },
           { title: "nav.team", href: "/app/team", icon: "UserCog", roles: ["Owner", "Admin"] },
         ],
       },
