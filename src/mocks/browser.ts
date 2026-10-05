@@ -18,6 +18,14 @@ const realApiHandlers = apiBaseUrl
     ])
   : [];
 
+/**
+ * The worker controls the same origin as Vite, so browser history navigation
+ * (for example a direct visit to `/app/barbers`) also produces a FetchEvent.
+ * Let Vite's SPA fallback answer these document requests explicitly; otherwise
+ * an unhandled navigation can be reported by the worker as a rejected fetch.
+ */
+const appNavigationHandlers = [http.get("/app/*", () => passthrough())];
+
 // Demo handlers come last. Anything they do not cover falls through to the
 // network (`onUnhandledRequest: "bypass"` in `main.tsx`).
-export const worker = setupWorker(...realApiHandlers, ...handlers);
+export const worker = setupWorker(...appNavigationHandlers, ...realApiHandlers, ...handlers);

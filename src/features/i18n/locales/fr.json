@@ -1,6 +1,10 @@
 {
   "nav": {
     "customers": "Clientes",
+    "dashboard": "Dashboard",
+    "barbers": "Barberos",
+    "services": "Servicios",
+    "appointments": "Turnos",
     "overview": "Vue d'ensemble",
     "analytics": "Analytique",
     "mail": "Messagerie",
@@ -26,6 +30,8 @@
     "settings": "Paramètres de l'espace de travail",
     "group": {
       "dashboard": "Tableau de bord",
+      "management": "Gestión",
+      "administration": "Administración",
       "apps": "Applications",
       "pages": "Pages",
       "uiElements": "Éléments UI",

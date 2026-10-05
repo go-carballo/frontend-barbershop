@@ -17,104 +17,36 @@ export type NavTrail = {
 export const navGroups: NavGroup[] = [
   {
     label: "nav.group.dashboard",
-    items: [
-      { title: "nav.overview", href: "/app/overview", icon: "LayoutDashboard" },
-      { title: "nav.analytics", href: "/app/analytics", icon: "LineChart" },
-    ],
+    items: [{ title: "nav.dashboard", href: "/app/overview", icon: "LayoutDashboard" }],
   },
   {
-    label: "nav.group.apps",
+    label: "nav.group.management",
     items: [
       {
-        title: "nav.mail",
-        icon: "Mail",
-        children: [
-          { title: "nav.mailInbox", href: "/app/mail", icon: "Inbox" },
-          { title: "nav.mailSent", href: "/app/mail/sent", icon: "Send" },
-        ],
-      },
-      { title: "nav.calendar", href: "/app/calendar", icon: "Calendar" },
-      {
-        title: "nav.notifications",
-        href: "/app/notifications",
-        icon: "Bell",
+        title: "nav.customers",
+        href: "/app/customers",
+        icon: "Users",
         roles: ["Owner", "Admin", "Manager"],
       },
+      { title: "nav.barbers", href: "/app/barbers", icon: "UserCog", roles: ["Owner", "Admin"] },
       {
-        title: "nav.support",
-        href: "/app/support",
-        icon: "LifeBuoy",
-        roles: ["Owner", "Admin", "Manager"],
-      },
-      {
-        title: "nav.integrations",
-        href: "/app/integrations",
-        icon: "Plug",
+        title: "nav.services",
+        href: "/app/services",
+        icon: "CreditCard",
         roles: ["Owner", "Admin"],
       },
+      { title: "nav.appointments", href: "/app/calendar", icon: "Calendar" },
     ],
   },
   {
-    label: "nav.group.pages",
+    label: "nav.group.administration",
     items: [
       {
-        title: "nav.people",
-        icon: "UsersRound",
-        children: [
-          {
-            title: "nav.users",
-            href: "/app/users",
-            icon: "Users",
-            roles: ["Owner", "Admin", "Manager"],
-          },
-          {
-            title: "nav.customers",
-            href: "/app/customers",
-            icon: "Users",
-            roles: ["Owner", "Admin", "Manager"],
-          },
-          { title: "nav.team", href: "/app/team", icon: "UserCog", roles: ["Owner", "Admin"] },
-        ],
+        title: "nav.users",
+        href: "/app/users",
+        icon: "Users",
+        roles: ["Owner", "Admin", "Manager"],
       },
-      {
-        title: "nav.finance",
-        icon: "Wallet",
-        children: [
-          {
-            title: "nav.billing",
-            href: "/app/billing",
-            icon: "CreditCard",
-            roles: ["Owner", "Admin"],
-          },
-          {
-            title: "nav.transactions",
-            href: "/app/transactions",
-            icon: "Receipt",
-            roles: ["Owner", "Admin", "Manager"],
-          },
-        ],
-      },
-      { title: "nav.profile", href: "/app/profile", icon: "UserRound" },
-      { title: "nav.authentication", href: "/login", icon: "KeyRound" },
-      { title: "nav.notFound", href: "/app/404", icon: "FileQuestion" },
-    ],
-  },
-  {
-    label: "nav.group.uiElements",
-    items: [{ title: "nav.uiKit", href: "/app/ui", icon: "Shapes" }],
-  },
-  {
-    label: "nav.group.data",
-    items: [
-      { title: "nav.dataTables", href: "/app/data/tables", icon: "Table2" },
-      { title: "nav.dataCharts", href: "/app/data/charts", icon: "BarChart3" },
-    ],
-  },
-  {
-    label: "nav.group.settings",
-    items: [
-      { title: "nav.userSettings", href: "/app/settings/user", icon: "UserRoundCog" },
-      { title: "nav.settings", href: "/app/settings", icon: "Settings" },
     ],
   },
 ];

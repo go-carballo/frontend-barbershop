@@ -1,5 +1,4 @@
 import { screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { navLeafItems, resolveNavTrail } from "@/components/layout/nav-items";
 import { defaultSession } from "@/mocks/data";
@@ -26,82 +25,62 @@ describe("navigation information architecture", () => {
   it("exposes leaf items for search regardless of nesting", () => {
     const hrefs = navLeafItems.map((item) => item.href);
     expect(hrefs).toContain("/app/users");
-    expect(hrefs).toContain("/app/settings/user");
+    expect(hrefs).toContain("/app/customers");
+    expect(hrefs).toContain("/app/barbers");
+    expect(hrefs).toContain("/app/services");
+    expect(hrefs).toContain("/app/calendar");
     expect(hrefs).not.toContain(undefined);
   });
 
-  it("resolves trails through section parents", () => {
-    const trail = resolveNavTrail("/app/team");
-    expect(trail?.group.label).toBe("nav.group.pages");
-    expect(trail?.item.title).toBe("nav.people");
-    expect(trail?.child?.title).toBe("nav.team");
+  it("resolves trails through the BarberShop management section", () => {
+    const trail = resolveNavTrail("/app/barbers");
+    expect(trail?.group.label).toBe("nav.group.management");
+    expect(trail?.item.title).toBe("nav.barbers");
+    expect(trail?.child).toBeUndefined();
   });
 
-  it("resolves the longest href match for nested routes", () => {
-    expect(resolveNavTrail("/app/settings/user")?.item.title).toBe("nav.userSettings");
-    expect(resolveNavTrail("/app/settings")?.item.title).toBe("nav.settings");
+  it("keeps demo routes out of the main navigation", () => {
+    expect(resolveNavTrail("/app/settings/user")).toBeUndefined();
+    expect(resolveNavTrail("/app/analytics")).toBeUndefined();
   });
 
-  it("keeps sections collapsed unless their subtree is active", async () => {
+  it("shows only the BarberShop navigation modules", async () => {
     seed();
     renderApp({ initialEntries: ["/app/overview"] });
 
-    expect(await screen.findByRole("link", { name: /overview/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /people/i })).toHaveAttribute(
-      "aria-expanded",
-      "false",
+    expect(await screen.findByRole("link", { name: /dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /clientes/i })).toHaveAttribute(
+      "href",
+      "/app/customers",
     );
-    expect(screen.queryByRole("link", { name: /users/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /finance/i })).toHaveAttribute(
-      "aria-expanded",
-      "false",
+    expect(screen.getByRole("link", { name: /barberos/i })).toHaveAttribute("href", "/app/barbers");
+    expect(screen.getByRole("link", { name: /servicios/i })).toHaveAttribute(
+      "href",
+      "/app/services",
     );
+    expect(screen.getByRole("link", { name: /turnos/i })).toHaveAttribute("href", "/app/calendar");
+    expect(screen.queryByRole("link", { name: /analytics/i })).not.toBeInTheDocument();
   });
 
-  it("auto-expands the active trail and toggles on click", async () => {
-    seed();
-    const user = userEvent.setup();
-    renderApp({ initialEntries: ["/app/users"] });
-
-    const people = await screen.findByRole("button", { name: /people/i });
-    expect(people).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("link", { name: /users/i })).toBeInTheDocument();
-
-    await user.click(people);
-    expect(people).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByRole("link", { name: /users/i })).not.toBeInTheDocument();
-
-    await user.click(people);
-    expect(screen.getByRole("link", { name: /users/i })).toBeInTheDocument();
-  });
-
-  it("hides restricted children for a Manager while keeping allowed ones", async () => {
+  it("preserves role filtering for management modules", async () => {
     seed(managerSession);
     renderApp({ initialEntries: ["/app/overview"] });
 
-    expect(await screen.findByRole("link", { name: /overview/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /people/i })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /team/i })).not.toBeInTheDocument();
-
-    const finance = screen.getByRole("button", { name: /finance/i });
-    await userEvent.setup().click(finance);
-    expect(screen.getByRole("link", { name: /transactions/i })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /billing/i })).not.toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /clientes/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /barberos/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /servicios/i })).not.toBeInTheDocument();
   });
 
-  it("renders breadcrumbs for nested routes with the current page last", async () => {
+  it("renders breadcrumbs for management routes with the current page last", async () => {
     seed();
-    renderApp({ initialEntries: ["/app/team"] });
+    renderApp({ initialEntries: ["/app/barbers"] });
 
     const breadcrumb = await screen.findByRole("navigation", { name: /breadcrumb/i });
     const items = within(breadcrumb).getAllByRole("listitem");
-    expect(items).toHaveLength(3);
-    expect(items[0]).toHaveTextContent(/pages/i);
-    expect(within(items[1]).getByRole("link", { name: /people/i })).toHaveAttribute(
-      "href",
-      "/app/users",
-    );
-    expect(within(items[2]).getByText(/team/i)).toHaveAttribute("aria-current", "page");
+    expect(items).toHaveLength(2);
+    expect(items[0]).toHaveTextContent(/gestión/i);
+    expect(within(items[1]).getByText(/barberos/i)).toHaveAttribute("aria-current", "page");
   });
 
   it("renders two-level breadcrumbs for flat pages", async () => {
@@ -111,6 +90,6 @@ describe("navigation information architecture", () => {
     const breadcrumb = await screen.findByRole("navigation", { name: /breadcrumb/i });
     const items = within(breadcrumb).getAllByRole("listitem");
     expect(items).toHaveLength(2);
-    expect(within(items[1]).getByText(/overview/i)).toHaveAttribute("aria-current", "page");
+    expect(within(items[1]).getByText(/dashboard/i)).toHaveAttribute("aria-current", "page");
   });
 });

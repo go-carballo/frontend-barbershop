@@ -29,7 +29,10 @@ export const Breadcrumbs = () => {
         {crumbs.map((crumb, index) => {
           const isLast = index === crumbs.length - 1;
           return (
-            <li key={crumb.label} className="flex items-center gap-1.5">
+            <li
+              key={`${crumb.href ?? (isLast ? "current" : "group")}:${crumb.label}`}
+              className="flex items-center gap-1.5"
+            >
               {index > 0 ? (
                 <ChevronRight
                   className="h-3.5 w-3.5 shrink-0 text-[var(--border-strong)]"

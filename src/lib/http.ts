@@ -19,7 +19,13 @@ export const isBackendConfigured = () => readApiBaseUrl() !== "";
  *
  * Migrating an endpoint to the real API is a one-line change here.
  */
-export const REAL_API_ROUTES = ["/auth/login", "/auth/profile", "/customers"] as const;
+export const REAL_API_ROUTES = [
+  "/auth/login",
+  "/auth/profile",
+  "/customers",
+  "/barbers",
+  "/services",
+] as const;
 
 const isRealApiRoute = (path: string) =>
   REAL_API_ROUTES.some((route) => {
