@@ -5,6 +5,10 @@ type CalendarGridProps = {
   year: number;
   month: number;
   events: CalendarEvent[];
+  /** Opens an appointment when a chip is clicked. Without it chips stay inert. */
+  onEventClick?: (event: CalendarEvent) => void;
+  /** Starts a new appointment pre-filled with the clicked day. */
+  onDayClick?: (dateKey: string) => void;
 };
 
 type MonthCell = {
@@ -45,7 +49,13 @@ export const buildMonthCells = (year: number, month: number): MonthCell[] => {
   });
 };
 
-export const CalendarGrid = ({ year, month, events }: CalendarGridProps) => {
+export const CalendarGrid = ({
+  year,
+  month,
+  events,
+  onEventClick,
+  onDayClick,
+}: CalendarGridProps) => {
   const cells = buildMonthCells(year, month);
   const eventsByDate = new Map<string, CalendarEvent[]>();
   for (const event of events) {
@@ -96,40 +106,88 @@ export const CalendarGrid = ({ year, month, events }: CalendarGridProps) => {
                 <td
                   key={cell.key}
                   className={cn(
-                    "h-24 border-b border-[var(--border)] p-1.5 align-top",
+                    "group h-24 border-b border-[var(--border)] p-1.5 align-top",
                     isToday && "bg-[var(--surface-panel)] ring-1 ring-inset ring-[var(--accent)]",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-medium",
-                      isToday
-                        ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                        : "text-[var(--foreground-muted)]",
-                    )}
-                  >
-                    {cell.day}
-                  </span>
-                  <div className="mt-1 space-y-1">
-                    {dayEvents.map((event) => (
-                      <div
-                        key={event.id}
+                  {onDayClick ? (
+                    <button
+                      type="button"
+                      onClick={() => onDayClick(cell.dateKey)}
+                      title="Nuevo turno"
+                      aria-label={`Nuevo turno el ${cell.day}`}
+                      className={cn(
+                        "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+                        isToday
+                          ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                          : "text-[var(--foreground-muted)] hover:bg-[var(--surface-secondary)]",
+                      )}
+                    >
+                      {cell.day}
+                      <span
+                        aria-hidden="true"
                         className={cn(
-                          "truncate rounded-md border-l-2 px-1.5 py-0.5 text-[11px] font-medium text-[var(--foreground-muted)]",
-                          toneChipClass[event.tone],
+                          "ml-1 font-semibold opacity-0 transition-opacity group-hover:opacity-100",
+                          isToday ? "text-[var(--accent-foreground)]" : "text-[var(--accent)]",
                         )}
-                        title={`${event.title} · ${event.time}`}
                       >
-                        <span
-                          aria-hidden="true"
+                        +
+                      </span>
+                    </button>
+                  ) : (
+                    <span
+                      className={cn(
+                        "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-medium",
+                        isToday
+                          ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
+                          : "text-[var(--foreground-muted)]",
+                      )}
+                    >
+                      {cell.day}
+                    </span>
+                  )}
+                  <div className="mt-1 space-y-1">
+                    {dayEvents.map((event) => {
+                      const chipTitle = `${event.title} · ${event.time}`;
+                      const chipContent = (
+                        <>
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle",
+                              eventToneDot[event.tone],
+                            )}
+                          />
+                          {event.time} {event.title}
+                        </>
+                      );
+                      return onEventClick ? (
+                        <button
+                          key={event.id}
+                          type="button"
+                          title={chipTitle}
+                          aria-label={`Ver turno ${event.time} ${event.title}`}
+                          onClick={() => onEventClick(event)}
                           className={cn(
-                            "mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle",
-                            eventToneDot[event.tone],
+                            "block w-full truncate rounded-md border-l-2 px-1.5 py-0.5 text-left text-[11px] font-medium text-[var(--foreground-muted)] transition-colors hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+                            toneChipClass[event.tone],
                           )}
-                        />
-                        {event.time} {event.title}
-                      </div>
-                    ))}
+                        >
+                          {chipContent}
+                        </button>
+                      ) : (
+                        <div
+                          key={event.id}
+                          title={chipTitle}
+                          className={cn(
+                            "truncate rounded-md border-l-2 px-1.5 py-0.5 text-[11px] font-medium text-[var(--foreground-muted)]",
+                            toneChipClass[event.tone],
+                          )}
+                        >
+                          {chipContent}
+                        </div>
+                      );
+                    })}
                   </div>
                 </td>
               );

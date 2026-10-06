@@ -41,8 +41,8 @@ const NotificationsPage = lazy(() =>
 const MailPage = lazy(() =>
   import("@/pages/mail-page").then((module) => ({ default: module.MailPage })),
 );
-const CalendarPage = lazy(() =>
-  import("@/pages/calendar-page").then((module) => ({ default: module.CalendarPage })),
+const AppointmentsPage = lazy(() =>
+  import("@/pages/appointments-page").then((module) => ({ default: module.AppointmentsPage })),
 );
 const ProfilePage = lazy(() =>
   import("@/pages/profile-page").then((module) => ({ default: module.ProfilePage })),
@@ -112,7 +112,9 @@ export const AppRouter = () => (
           <Route path="/app/analytics" element={<AnalyticsPage />} />
           <Route path="/app/mail" element={<MailPage />} />
           <Route path="/app/mail/sent" element={<MailPage />} />
-          <Route path="/app/calendar" element={<CalendarPage />} />
+          {/* Historic demo route; the appointment module now lives at /app/appointments. */}
+          <Route path="/app/calendar" element={<Navigate to="/app/appointments" replace />} />
+          <Route path="/app/appointments" element={<AppointmentsPage />} />
           <Route path="/app/profile" element={<ProfilePage />} />
           <Route path="/app/404" element={<NotFoundPage embedded />} />
           <Route path="/app/ui" element={<UiKitPage />} />

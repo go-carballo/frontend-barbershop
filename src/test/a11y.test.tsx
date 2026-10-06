@@ -1,9 +1,47 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { defaultSession } from "@/mocks/data";
+import { makeAppointment, useAppointmentsFixture } from "@/test/appointments-fixtures";
 import { renderApp } from "@/test/test-app";
+
+// jsdom signals belong to a different realm than Node fetch, so React Query
+// AbortSignals crash MSW's Request inside the test environment.
+vi.mock("@/features/appointments/appointments-api", async (importOriginal) => {
+  const api = await importOriginal<typeof import("@/features/appointments/appointments-api")>();
+  return {
+    ...api,
+    getAppointmentsRequest: (
+      params: import("@/features/appointments/appointments-api").AppointmentListParams,
+    ) => api.getAppointmentsRequest(params),
+    getAppointmentRequest: (id: string) => api.getAppointmentRequest(id),
+  };
+});
+vi.mock("@/features/customers/customers-api", async (importOriginal) => {
+  const api = await importOriginal<typeof import("@/features/customers/customers-api")>();
+  return {
+    ...api,
+    getCustomersRequest: (params: import("@/features/customers/customers-api").CustomersParams) =>
+      api.getCustomersRequest(params),
+  };
+});
+vi.mock("@/features/barbers/barbers-api", async (importOriginal) => {
+  const api = await importOriginal<typeof import("@/features/barbers/barbers-api")>();
+  return {
+    ...api,
+    getBarbersRequest: (params: import("@/features/barbers/barbers-api").BarbersParams) =>
+      api.getBarbersRequest(params),
+  };
+});
+vi.mock("@/features/services/services-api", async (importOriginal) => {
+  const api = await importOriginal<typeof import("@/features/services/services-api")>();
+  return {
+    ...api,
+    getServicesRequest: (params: import("@/features/services/services-api").ServicesParams) =>
+      api.getServicesRequest(params),
+  };
+});
 
 const seedSession = () => {
   window.localStorage.setItem("admin-dashboard-template:session", JSON.stringify(defaultSession));
@@ -90,10 +128,12 @@ describe("accessibility", () => {
     expect(results.violations).toHaveLength(0);
   });
 
-  it("calendar page has no detectable violations", async () => {
+  it("appointments page has no detectable violations", async () => {
     seedSession();
-    const { container } = renderApp({ initialEntries: ["/app/calendar"] });
-    await screen.findByText(/sprint planning/i);
+    useAppointmentsFixture([makeAppointment()]);
+    const { container } = renderApp({ initialEntries: ["/app/appointments"] });
+    // Scoped to the table: the customer filter dropdown also lists the name.
+    await within(await screen.findByRole("table")).findByText("Ana Pérez");
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
   });

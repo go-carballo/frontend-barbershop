@@ -35,7 +35,7 @@ export const navGroups: NavGroup[] = [
         icon: "CreditCard",
         roles: ["Owner", "Admin"],
       },
-      { title: "nav.appointments", href: "/app/calendar", icon: "Calendar" },
+      { title: "nav.appointments", href: "/app/appointments", icon: "Calendar" },
     ],
   },
   {

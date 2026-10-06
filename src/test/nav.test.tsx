@@ -28,7 +28,7 @@ describe("navigation information architecture", () => {
     expect(hrefs).toContain("/app/customers");
     expect(hrefs).toContain("/app/barbers");
     expect(hrefs).toContain("/app/services");
-    expect(hrefs).toContain("/app/calendar");
+    expect(hrefs).toContain("/app/appointments");
     expect(hrefs).not.toContain(undefined);
   });
 
@@ -58,7 +58,10 @@ describe("navigation information architecture", () => {
       "href",
       "/app/services",
     );
-    expect(screen.getByRole("link", { name: /turnos/i })).toHaveAttribute("href", "/app/calendar");
+    expect(screen.getByRole("link", { name: /turnos/i })).toHaveAttribute(
+      "href",
+      "/app/appointments",
+    );
     expect(screen.queryByRole("link", { name: /analytics/i })).not.toBeInTheDocument();
   });
 
