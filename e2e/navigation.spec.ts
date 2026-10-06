@@ -4,7 +4,6 @@ import { login } from "./helpers";
 test("navigates between module pages", async ({ page }) => {
   await login(page);
 
-  await page.getByRole("button", { name: /people/i }).click();
   await page.getByRole("link", { name: /users/i }).click();
   await expect(page).toHaveURL(/.*\/app\/users/);
   await expect(
@@ -31,7 +30,7 @@ test("switches the UI language from user settings", async ({ page }) => {
   await page.goto("/app/settings/user");
   await page.getByRole("radio", { name: /español/i }).click();
 
-  await expect(page.getByRole("link", { name: /visión general/i }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: /personaliza tu experiencia/i })).toBeVisible();
 });
 
 test("selects a palette from user settings", async ({ page }) => {

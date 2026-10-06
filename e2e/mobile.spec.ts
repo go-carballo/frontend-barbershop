@@ -11,11 +11,10 @@ test.describe("mobile continuity", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
 
-    for (const group of ["Dashboard", "Apps", "Pages", "Settings"]) {
+    for (const group of ["Dashboard", "Gestión", "Administración"]) {
       await expect(dialog.getByRole("paragraph").filter({ hasText: group })).toBeVisible();
     }
 
-    await dialog.getByRole("button", { name: /people/i }).click();
     await dialog.getByRole("link", { name: "Users" }).click();
     await page.waitForURL("**/app/users");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/access control/i);
