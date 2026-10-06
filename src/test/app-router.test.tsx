@@ -28,6 +28,8 @@ describe("app routing", () => {
   });
 
   it("renders a skip link for authenticated routes", async () => {
+    // Warm the lazy route module so the assertion does not race the chunk load.
+    await import("@/pages/overview-page");
     window.localStorage.setItem("admin-dashboard-template:session", JSON.stringify(defaultSession));
 
     renderApp({ initialEntries: ["/app/overview"] });

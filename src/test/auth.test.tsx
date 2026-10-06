@@ -156,16 +156,16 @@ describe("auth & session", () => {
         HttpResponse.json({ id: "usr_backend_2", email: "joe@barbershop.com", role: "barber" }),
       ),
     );
-    const user = userEvent.setup();
 
     renderApp({ initialEntries: ["/app/overview"] });
-    await screen.findByRole("link", { name: /overview/i }, { timeout: 3000 });
 
-    // Manager keeps the "People" section but loses Team, and Finance loses Billing.
-    await user.click(screen.getByRole("button", { name: /people/i }));
-    await user.click(screen.getByRole("button", { name: /finance/i }));
-    expect(screen.queryByRole("link", { name: /team/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /billing/i })).not.toBeInTheDocument();
+    // `barber` normalizes to Manager: it keeps the shared modules…
+    await screen.findByRole("link", { name: /dashboard/i }, { timeout: 3000 });
+    expect(screen.getByRole("link", { name: /clientes/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /turnos/i })).toBeInTheDocument();
+    // …but loses the Owner/Admin-only barber and services entries.
+    expect(screen.queryByRole("link", { name: /barberos/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /servicios/i })).not.toBeInTheDocument();
   });
 
   it("denies every role-gated route when the backend role is unknown", async () => {

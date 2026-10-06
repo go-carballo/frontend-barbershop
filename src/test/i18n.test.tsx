@@ -18,8 +18,11 @@ describe("internationalization", () => {
 
     await i18n.changeLanguage("es");
 
-    const labels = await screen.findAllByText("Visión general");
+    const labels = await screen.findAllByText("Resumen");
     expect(labels.length).toBeGreaterThan(0);
+    expect(
+      await screen.findByRole("link", { name: /saltar al contenido principal/i }),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Overview")).not.toBeInTheDocument();
   });
 });

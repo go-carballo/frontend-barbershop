@@ -41,6 +41,11 @@ describe("user settings", () => {
     await screen.findByRole("heading", { name: /personalize your experience/i });
     await user.click(screen.getByRole("radio", { name: /español/i }));
 
-    expect(await screen.findByRole("link", { name: /visión general/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: /personaliza tu experiencia/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /personalize your experience/i }),
+    ).not.toBeInTheDocument();
   });
 });
