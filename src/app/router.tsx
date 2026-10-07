@@ -88,7 +88,7 @@ export const AppRouter = () => (
           <Route
             path="/app/customers"
             element={
-              <RoleRoute roles={["Owner", "Admin", "Manager"]}>
+              <RoleRoute roles={["admin", "barber", "receptionist"]}>
                 <CustomersPage />
               </RoleRoute>
             }
@@ -96,7 +96,7 @@ export const AppRouter = () => (
           <Route
             path="/app/barbers"
             element={
-              <RoleRoute roles={["Owner", "Admin"]}>
+              <RoleRoute roles={["admin", "barber", "receptionist"]}>
                 <BarbersPage />
               </RoleRoute>
             }
@@ -104,7 +104,7 @@ export const AppRouter = () => (
           <Route
             path="/app/services"
             element={
-              <RoleRoute roles={["Owner", "Admin"]}>
+              <RoleRoute roles={["admin", "barber", "receptionist"]}>
                 <ServicesPage />
               </RoleRoute>
             }
@@ -123,59 +123,17 @@ export const AppRouter = () => (
           <Route
             path="/app/users"
             element={
-              <RoleRoute roles={["Owner", "Admin", "Manager"]}>
+              <RoleRoute roles={["admin"]}>
                 <UsersPage />
               </RoleRoute>
             }
           />
-          <Route
-            path="/app/team"
-            element={
-              <RoleRoute roles={["Owner", "Admin"]}>
-                <TeamPage />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/app/billing"
-            element={
-              <RoleRoute roles={["Owner", "Admin"]}>
-                <BillingPage />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/app/transactions"
-            element={
-              <RoleRoute roles={["Owner", "Admin", "Manager"]}>
-                <TransactionsPage />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/app/notifications"
-            element={
-              <RoleRoute roles={["Owner", "Admin", "Manager"]}>
-                <NotificationsPage />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/app/support"
-            element={
-              <RoleRoute roles={["Owner", "Admin", "Manager"]}>
-                <SupportPage />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/app/integrations"
-            element={
-              <RoleRoute roles={["Owner", "Admin"]}>
-                <IntegrationsPage />
-              </RoleRoute>
-            }
-          />
+          <Route path="/app/team" element={<TeamPage />} />
+          <Route path="/app/billing" element={<BillingPage />} />
+          <Route path="/app/transactions" element={<TransactionsPage />} />
+          <Route path="/app/notifications" element={<NotificationsPage />} />
+          <Route path="/app/support" element={<SupportPage />} />
+          <Route path="/app/integrations" element={<IntegrationsPage />} />
           <Route path="/app/settings" element={<SettingsPage />} />
           <Route path="/app/settings/user" element={<UserSettingsPage />} />
         </Route>

@@ -10,13 +10,28 @@ afterEach(() => server.resetHandlers());
 
 describe("api layer (http wrapper)", () => {
   it("returns parsed JSON for a successful GET", async () => {
+    server.use(
+      http.get("/users", () =>
+        HttpResponse.json([
+          {
+            id: "u1",
+            name: "Admin",
+            email: "admin@example.com",
+            role: "admin",
+            isActive: true,
+            createdAt: "2026-01-01T00:00:00.000Z",
+            updatedAt: "2026-01-01T00:00:00.000Z",
+          },
+        ]),
+      ),
+    );
     const users = await getUsersRequest();
     expect(Array.isArray(users)).toBe(true);
     expect(users.length).toBeGreaterThan(0);
   });
 
   it("throws on non-2xx responses", async () => {
-    server.use(http.get("/api/users", () => new HttpResponse(null, { status: 500 })));
+    server.use(http.get("/users", () => new HttpResponse(null, { status: 500 })));
     await expect(getUsersRequest()).rejects.toThrow(/status 500/);
   });
 

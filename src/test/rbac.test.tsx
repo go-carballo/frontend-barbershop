@@ -3,12 +3,12 @@ import { defaultSession } from "@/mocks/data";
 import { renderApp } from "@/test/test-app";
 import type { Session } from "@/types";
 
-const managerSession: Session = {
+const barberSession: Session = {
   user: {
     id: "m1",
-    name: "Dana Manager",
+    name: "Dana Barber",
     email: "dana@northstar.app",
-    role: "Manager",
+    role: "barber",
     organization: "Northstar",
   },
   isAuthenticated: true,
@@ -20,7 +20,7 @@ const seed = (session: Session) =>
   window.localStorage.setItem("admin-dashboard-template:session", JSON.stringify(session));
 
 describe("role-based access control", () => {
-  it("shows every nav item for an Owner session", async () => {
+  it("shows every real module for an admin session", async () => {
     seed(defaultSession);
     renderApp({ initialEntries: ["/app/overview"] });
 
@@ -32,34 +32,30 @@ describe("role-based access control", () => {
     expect(screen.getByRole("link", { name: /users/i })).toBeInTheDocument();
   });
 
-  it("hides role-restricted nav items for a Manager session", async () => {
-    seed(managerSession);
+  it("hides Administración for a barber while preserving read modules", async () => {
+    seed(barberSession);
     renderApp({ initialEntries: ["/app/overview"] });
 
     expect(await screen.findByRole("link", { name: /dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /clientes/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /turnos/i })).toBeInTheDocument();
-    // Barberos y servicios son Owner/Admin: quedan ocultos para un Manager.
-    expect(screen.queryByRole("link", { name: /barberos/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /servicios/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /barberos/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /servicios/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /users/i })).not.toBeInTheDocument();
   });
 
-  it("redirects a Manager away from a restricted route", async () => {
-    seed(managerSession);
-    renderApp({ initialEntries: ["/app/billing"] });
+  it("redirects a barber away from Usuarios", async () => {
+    seed(barberSession);
+    renderApp({ initialEntries: ["/app/users"] });
 
     expect(await screen.findByText(/dashboard overview/i)).toBeInTheDocument();
-    expect(
-      screen.queryByRole("heading", { name: /plans, usage and invoices/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /^usuarios$/i })).not.toBeInTheDocument();
   });
 
-  it("allows an Owner to reach a restricted route", async () => {
+  it("allows an admin to reach Usuarios", async () => {
     seed(defaultSession);
-    renderApp({ initialEntries: ["/app/billing"] });
+    renderApp({ initialEntries: ["/app/users"] });
 
-    expect(
-      await screen.findByRole("heading", { name: /plans, usage and invoices/i }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /^usuarios$/i })).toBeInTheDocument();
   });
 });

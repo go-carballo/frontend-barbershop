@@ -43,7 +43,7 @@ export const updateCustomerRequest = (id: string, input: UpdateCustomerInput) =>
     body: JSON.stringify(input),
   });
 
-// Auth normalizes both staff roles to Manager. Preserve the JWT distinction here.
+// The token carries the backend's role verbatim; these checks mirror its guards.
 export const canManageCustomers = (token?: string) => {
   try {
     const segment = token?.split(".")[1] ?? "";

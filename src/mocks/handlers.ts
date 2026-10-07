@@ -111,18 +111,19 @@ export const handlers = [
   http.post("/api/users/invite", async ({ request }) => {
     await delay(320);
     const body = (await request.json()) as { name: string; email: string; role: string };
-    const allowed = ["Owner", "Admin", "Support", "Analyst"] as const;
+    const allowed = ["admin", "barber", "receptionist"] as const;
     const role = (allowed as readonly string[]).includes(body.role)
       ? (body.role as UserRecord["role"])
-      : "Analyst";
+      : "receptionist";
     const nextId = `usr_${String(usersPayload.length + 1).padStart(3, "0")}`;
     const invited: UserRecord = {
       id: nextId,
       name: body.name,
       email: body.email,
       role,
-      status: "Invited",
-      lastActiveAt: "Never",
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     usersPayload.push(invited);
     return HttpResponse.json(invited, { status: 201 });
@@ -130,13 +131,13 @@ export const handlers = [
   http.patch("/api/users/:id", async ({ params, request }) => {
     await delay(240);
     const { id } = params;
-    const body = (await request.json()) as { status?: string };
+    const body = (await request.json()) as { isActive?: boolean };
     const user = usersPayload.find((entry) => entry.id === id);
     if (!user) {
       return HttpResponse.json({ message: "User not found" }, { status: 404 });
     }
-    if (body.status === "Active" || body.status === "Paused") {
-      user.status = body.status;
+    if (typeof body.isActive === "boolean") {
+      user.isActive = body.isActive;
     }
     return HttpResponse.json(user);
   }),

@@ -129,7 +129,7 @@ const readBackendRole = (token?: string): string | null => {
 export const canCreateAppointment = (token?: string, uiRole?: AppRole): boolean => {
   const role = readBackendRole(token);
   if (role) return role === "admin" || role === "receptionist" || role === "barber";
-  return uiRole === "Owner" || uiRole === "Admin" || uiRole === "Manager";
+  return uiRole === "admin" || uiRole === "receptionist" || uiRole === "barber";
 };
 
 /**
@@ -138,5 +138,5 @@ export const canCreateAppointment = (token?: string, uiRole?: AppRole): boolean 
 export const canManageAppointment = (token?: string, uiRole?: AppRole): boolean => {
   const role = readBackendRole(token);
   if (role) return role === "admin" || role === "receptionist";
-  return uiRole === "Owner" || uiRole === "Admin";
+  return uiRole === "admin" || uiRole === "receptionist";
 };

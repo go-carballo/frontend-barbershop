@@ -5,12 +5,12 @@ import { defaultSession } from "@/mocks/data";
 import { renderApp } from "@/test/test-app";
 import type { Session } from "@/types";
 
-const managerSession: Session = {
+const barberSession: Session = {
   user: {
     id: "m1",
-    name: "Dana Manager",
+    name: "Dana Barber",
     email: "dana@northstar.app",
-    role: "Manager",
+    role: "barber",
     organization: "Northstar",
   },
   isAuthenticated: true,
@@ -66,13 +66,14 @@ describe("navigation information architecture", () => {
   });
 
   it("preserves role filtering for management modules", async () => {
-    seed(managerSession);
+    seed(barberSession);
     renderApp({ initialEntries: ["/app/overview"] });
 
     expect(await screen.findByRole("link", { name: /dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /clientes/i })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /barberos/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /servicios/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /barberos/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /servicios/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /users/i })).not.toBeInTheDocument();
   });
 
   it("renders breadcrumbs for management routes with the current page last", async () => {

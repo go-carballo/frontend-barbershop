@@ -6,14 +6,15 @@ export type NavItem = {
   children?: NavItem[];
 };
 
-export type AppRole = "Owner" | "Admin" | "Manager";
+/** Roles emitted verbatim by the NestJS API. */
+export type AppRole = "admin" | "barber" | "receptionist";
 
 export type Session = {
   user: {
     id: string;
     name: string;
     email: string;
-    /** Normalized to `AppRole` by `normalizeRole`; see `lib/rbac.ts`. */
+    /** Validated against `AppRole` by `normalizeRole`; see `lib/rbac.ts`. */
     role?: AppRole;
     organization: string;
   };
@@ -50,17 +51,17 @@ export type OverviewPayload = {
   chart: ChartPoint[];
 };
 
-export type UserStatus = "Active" | "Invited" | "Paused";
-
 export type UserRecord = {
   id: string;
   name: string;
   email: string;
-  role: "Owner" | "Admin" | "Support" | "Analyst";
-  status: UserStatus;
-  lastActiveAt: string;
-  avatarUrl?: string;
+  role: AppRole;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
+
+export type UserStatus = "Active" | "Invited" | "Paused";
 
 export type SettingsPayload = {
   profile: {

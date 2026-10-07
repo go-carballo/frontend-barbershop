@@ -1,146 +1,152 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { CreateUserInput, UpdateUserInput } from "@/features/users/users-api";
+import type { AppRole, UserRecord } from "@/types";
 
-const inviteSchema = z.object({
-  name: z.string().min(2, "Enter the member's full name."),
-  email: z.string().email("Enter a valid work email."),
-  role: z.enum(["Admin", "Analyst", "Support"]),
+const schema = z.object({
+  name: z.string().trim().min(1, "El nombre es obligatorio."),
+  email: z.string().trim().email("Ingresa un correo válido."),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres.").or(z.literal("")),
+  role: z.enum(["admin", "barber", "receptionist"]),
+  isActive: z.boolean(),
 });
-
-type InviteFormValues = z.infer<typeof inviteSchema>;
-
-type InviteUserDialogProps = {
+type UserFormValues = z.infer<typeof schema>;
+type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: InviteFormValues) => Promise<void>;
+  user?: UserRecord | null;
+  onSubmit: (values: CreateUserInput | UpdateUserInput) => Promise<void>;
   isSubmitting: boolean;
 };
-
-const roleOptions: { value: InviteFormValues["role"]; label: string; hint: string }[] = [
-  { value: "Admin", label: "Admin", hint: "Full operational access" },
-  { value: "Analyst", label: "Analyst", hint: "Read-mostly reporting access" },
-  { value: "Support", label: "Support", hint: "Customer-facing queues only" },
+const roles: { value: AppRole; label: string }[] = [
+  { value: "admin", label: "Administrador" },
+  { value: "barber", label: "Barbero" },
+  { value: "receptionist", label: "Recepcionista" },
 ];
 
-export const InviteUserDialog = ({
-  open,
-  onOpenChange,
-  onSubmit,
-  isSubmitting,
-}: InviteUserDialogProps) => {
-  const form = useForm<InviteFormValues>({
-    resolver: zodResolver(inviteSchema),
-    mode: "onBlur",
-    defaultValues: { name: "", email: "", role: "Analyst" },
+export const UserFormDialog = ({ open, onOpenChange, user, onSubmit, isSubmitting }: Props) => {
+  const editing = Boolean(user);
+  const form = useForm<UserFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: "", email: "", password: "", role: "receptionist", isActive: true },
   });
-
   const {
     register,
     handleSubmit,
     reset,
-    watch,
     formState: { errors },
   } = form;
-
+  useEffect(() => {
+    if (open)
+      reset(
+        user
+          ? {
+              name: user.name,
+              email: user.email,
+              password: "",
+              role: user.role,
+              isActive: user.isActive,
+            }
+          : { name: "", email: "", password: "", role: "receptionist", isActive: true },
+      );
+  }, [open, reset, user]);
   const submit = handleSubmit(async (values) => {
-    await onSubmit(values);
-    reset();
+    const { password, ...rest } = values;
+    await onSubmit(editing && password === "" ? rest : values);
   });
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogTitle>Invite a user</DialogTitle>
+        <DialogTitle>{editing ? "Editar usuario" : "Crear usuario"}</DialogTitle>
         <DialogDescription>
-          They receive access to this workspace with the role you pick below.
+          {editing
+            ? "Actualiza los datos y el acceso del usuario."
+            : "Crea una cuenta para el equipo."}
         </DialogDescription>
-
-        <form className="mt-4 space-y-4" onSubmit={submit} noValidate>
-          <div className="space-y-2">
-            <Label htmlFor="invite-name">Full name</Label>
+        <form className="mt-4 space-y-4" onSubmit={submit} noValidate autoComplete="off">
+          <Field label="Nombre" id="user-name" error={errors.name?.message}>
             <Input
-              id="invite-name"
-              placeholder="Jordan Fields"
-              aria-invalid={errors.name ? true : undefined}
-              aria-describedby={errors.name ? "invite-name-error" : undefined}
+              id="user-name"
+              autoComplete="off"
+              aria-invalid={!!errors.name}
               {...register("name")}
             />
-            {errors.name ? (
-              <p id="invite-name-error" role="alert" className="text-sm text-[var(--danger)]">
-                {errors.name.message}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="invite-email">Work email</Label>
+          </Field>
+          <Field label="Correo electrónico" id="user-email" error={errors.email?.message}>
             <Input
-              id="invite-email"
+              id="user-email"
               type="email"
-              placeholder="jordan@northstar.app"
-              aria-invalid={errors.email ? true : undefined}
-              aria-describedby={errors.email ? "invite-email-error" : undefined}
+              autoComplete="off"
+              aria-invalid={!!errors.email}
               {...register("email")}
             />
-            {errors.email ? (
-              <p id="invite-email-error" role="alert" className="text-sm text-[var(--danger)]">
-                {errors.email.message}
-              </p>
-            ) : null}
-          </div>
-
+          </Field>
+          <Field
+            label={`Contraseña${editing ? " (dejar vacía para mantenerla)" : ""}`}
+            id="user-password"
+            error={errors.password?.message}
+          >
+            <Input
+              id="user-password"
+              type="password"
+              autoComplete="new-password"
+              aria-invalid={!!errors.password}
+              {...register("password")}
+            />
+          </Field>
           <fieldset className="space-y-2">
-            <legend className="text-sm font-medium">Role</legend>
-            <div className="space-y-2">
-              {roleOptions.map((option) => (
-                <label
-                  key={option.value}
-                  className="flex cursor-pointer items-start gap-3 rounded-[0.8rem] border border-[var(--border)] bg-[var(--surface-panel)] p-3 has-[[data-state=checked]]:border-[var(--ring)]"
-                >
-                  <input
-                    type="radio"
-                    value={option.value}
-                    {...register("role")}
-                    className="mt-1 accent-[var(--accent)]"
-                  />
-                  <span>
-                    <span className="block text-sm font-medium">{option.label}</span>
-                    <span className="block text-xs text-[var(--muted-foreground)]">
-                      {option.hint}
-                    </span>
-                  </span>
-                </label>
-              ))}
-            </div>
+            <legend className="text-sm font-medium">Rol</legend>
+            {roles.map((role) => (
+              <label key={role.value} className="mr-4 inline-flex items-center gap-2 text-sm">
+                <input type="radio" value={role.value} {...register("role")} />
+                {role.label}
+              </label>
+            ))}
           </fieldset>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" {...register("isActive")} />
+            Activo
+          </label>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
-              <span className="flex items-center gap-2">
-                {isSubmitting ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-                ) : null}
-                {isSubmitting ? "Sending invite…" : "Send invite"}
-              </span>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+              {editing ? "Guardar cambios" : "Crear usuario"}
             </Button>
           </div>
         </form>
-        <span className="sr-only">{watch("role")} role selected</span>
       </DialogContent>
     </Dialog>
   );
 };
+
+const Field = ({
+  label,
+  id,
+  error,
+  children,
+}: {
+  label: string;
+  id: string;
+  error?: string;
+  children: React.ReactNode;
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor={id}>{label}</Label>
+    {children}
+    {error && (
+      <p role="alert" className="text-sm text-[var(--danger)]">
+        {error}
+      </p>
+    )}
+  </div>
+);

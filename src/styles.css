@@ -192,8 +192,8 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 18%, white);
-  color: var(--foreground);
+  background: var(--accent);
+  color: var(--accent-foreground);
 }
 
 #root {

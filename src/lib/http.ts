@@ -26,6 +26,7 @@ export const REAL_API_ROUTES = [
   "/barbers",
   "/services",
   "/appointments",
+  "/users",
 ] as const;
 
 const isRealApiRoute = (path: string) =>

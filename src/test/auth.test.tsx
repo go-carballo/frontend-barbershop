@@ -81,7 +81,7 @@ describe("auth & session", () => {
     let userCalls = 0;
     let refreshCalls = 0;
     server.use(
-      http.get("/api/users", () => {
+      http.get("/users", () => {
         userCalls += 1;
         return new HttpResponse(null, { status: 401 });
       }),

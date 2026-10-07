@@ -1,17 +1,29 @@
 import { http } from "@/lib/http";
-import type { UserRecord } from "@/types";
+import type { AppRole, UserRecord } from "@/types";
 
-export const getUsersRequest = (search = "") =>
-  http<UserRecord[]>(`/api/users?search=${encodeURIComponent(search)}`);
+export type CreateUserInput = {
+  name: string;
+  email: string;
+  password: string;
+  role: AppRole;
+  isActive?: boolean;
+};
+export type UpdateUserInput = Partial<CreateUserInput>;
+export const usersKeys = {
+  all: ["users"] as const,
+  list: (userId: string) => ["users", "list", userId] as const,
+};
 
-export const inviteUserRequest = (input: { name: string; email: string; role: string }) =>
-  http<UserRecord>("/api/users/invite", {
-    method: "POST",
+/** NestJS UsersController has no query DTO, search, or pagination. */
+export const getUsersRequest = (signal?: AbortSignal) => http<UserRecord[]>("/users", { signal });
+export const getUserRequest = (id: string, signal?: AbortSignal) =>
+  http<UserRecord>(`/users/${encodeURIComponent(id)}`, { signal });
+export const createUserRequest = (input: CreateUserInput) =>
+  http<UserRecord>("/users", { method: "POST", body: JSON.stringify(input) });
+export const updateUserRequest = (id: string, input: UpdateUserInput) =>
+  http<UserRecord>(`/users/${encodeURIComponent(id)}`, {
+    method: "PATCH",
     body: JSON.stringify(input),
   });
-
-export const setUserStatusRequest = (id: string, status: "Active" | "Paused") =>
-  http<UserRecord>(`/api/users/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify({ status }),
-  });
+export const deleteUserRequest = (id: string) =>
+  http<void>(`/users/${encodeURIComponent(id)}`, { method: "DELETE" });
