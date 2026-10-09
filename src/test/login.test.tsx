@@ -1,12 +1,16 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 import { defaultAccessToken } from "@/mocks/data";
+import { useOverviewFixture } from "@/test/overview-fixtures";
 import { server } from "@/test/server";
 import { renderApp } from "@/test/test-app";
 
 const REMEMBERED_KEY = "admin-dashboard-template:last-user";
+
+// Landing on /app/overview now requires backend-shaped dashboard responses.
+beforeEach(() => useOverviewFixture());
 
 const rememberAlex = () =>
   window.localStorage.setItem(
@@ -41,7 +45,7 @@ describe("login screen", () => {
     await user.click(await screen.findByRole("button", { name: /continue as avery stone/i }));
 
     expect(
-      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+      await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 
@@ -79,7 +83,7 @@ describe("login screen", () => {
     await user.type(password, "supersecret");
     await user.click(screen.getByRole("button", { name: /^sign in$/i }));
     expect(
-      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+      await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 
@@ -111,7 +115,7 @@ describe("login screen", () => {
 
     expect(body).not.toHaveProperty("method");
     expect(
-      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+      await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 });
@@ -156,7 +160,7 @@ describe("login screen against a configured backend", () => {
 
     expect(body).toEqual({ email: "admin@barbershop.com", password: "Admin123!!" });
     expect(
-      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+      await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 

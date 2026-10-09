@@ -1,3 +1,4 @@
+import type { OverviewChartPayload } from "@/features/overview/overview-api";
 import type {
   AnalyticsPayload,
   ApiKey,
@@ -6,7 +7,6 @@ import type {
   Integration,
   MailMessage,
   NotificationItem,
-  OverviewPayload,
   Session,
   SettingsPayload,
   TeamMember,
@@ -50,41 +50,8 @@ export const defaultAccessToken: string = [
   "mock-signature",
 ].join(".");
 
-export const overviewPayload: OverviewPayload = {
-  kpis: [
-    {
-      id: "arr",
-      label: "ARR",
-      value: 482000,
-      change: 14,
-      tone: "positive",
-      spark: [380, 392, 401, 415, 424, 438, 451, 462, 474, 482],
-    },
-    {
-      id: "accounts",
-      label: "Active Accounts",
-      value: 1284,
-      change: 8,
-      tone: "positive",
-      spark: [1120, 1148, 1163, 1181, 1204, 1219, 1240, 1258, 1271, 1284],
-    },
-    {
-      id: "retention",
-      label: "Retention",
-      value: 94,
-      change: 2,
-      tone: "positive",
-      spark: [90, 90, 91, 91, 92, 92, 93, 93, 94, 94],
-    },
-    {
-      id: "tickets",
-      label: "Open Tickets",
-      value: 38,
-      change: -5,
-      tone: "neutral",
-      spark: [52, 50, 49, 47, 45, 43, 41, 40, 39, 38],
-    },
-  ],
+/** Demo series for the `/app/data/charts` gallery (served by the overview mock). */
+export const overviewChartPayload: OverviewChartPayload = {
   chart: [
     { name: "Jan", revenue: 24000, activeUsers: 320 },
     { name: "Feb", revenue: 27000, activeUsers: 360 },
@@ -92,26 +59,6 @@ export const overviewPayload: OverviewPayload = {
     { name: "Apr", revenue: 32200, activeUsers: 465 },
     { name: "May", revenue: 36100, activeUsers: 520 },
     { name: "Jun", revenue: 40200, activeUsers: 592 },
-  ],
-  activity: [
-    {
-      id: "act_1",
-      title: "Q2 expansion won",
-      subtitle: "Northstar Pro upgraded 28 seats",
-      at: "8m ago",
-    },
-    {
-      id: "act_2",
-      title: "Billing anomaly resolved",
-      subtitle: "Finance workflow reconciled automatically",
-      at: "34m ago",
-    },
-    {
-      id: "act_3",
-      title: "New manager invited",
-      subtitle: "Sandra Lee joined Customer Ops",
-      at: "2h ago",
-    },
   ],
 };
 

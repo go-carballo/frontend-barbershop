@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { normalizeRole } from "@/lib/rbac";
 import { defaultSession } from "@/mocks/data";
+import { useOverviewFixture } from "@/test/overview-fixtures";
 import { server } from "@/test/server";
 import { renderApp } from "@/test/test-app";
 import type { Session } from "@/types";
@@ -11,6 +12,10 @@ const SESSION_KEY = "admin-dashboard-template:session";
 
 const seedSession = (session: Session = defaultSession) =>
   window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+// The dashboard now reads the real BarberShop endpoints; every test that lands
+// on /app/overview needs backend-shaped responses for them.
+beforeEach(() => useOverviewFixture());
 
 /**
  * A session as the app builds it after `POST /auth/login`: the role comes from
@@ -37,7 +42,7 @@ describe("auth & session", () => {
     );
 
     renderApp({ initialEntries: ["/app/overview"] });
-    await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 });
+    await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 });
 
     await waitFor(() => expect(sentTokens.length).toBeGreaterThan(0));
     expect(sentTokens[0]).toBe(`Bearer ${defaultSession.accessToken}`);
@@ -61,7 +66,7 @@ describe("auth & session", () => {
 
     // A second mount with the same storage simulates the reload.
     expect(
-      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+      await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
     expect(profileCalls).toBeGreaterThan(0);
     expect(window.localStorage.getItem(SESSION_KEY)).not.toBeNull();
@@ -111,7 +116,7 @@ describe("auth & session", () => {
     const user = userEvent.setup();
 
     renderApp({ initialEntries: ["/app/overview"] });
-    await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 });
+    await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 });
 
     await user.click(screen.getByRole("button", { name: /Avery Stone/i }));
     await user.click(await screen.findByRole("menuitem", { name: /logout/i }));
@@ -145,7 +150,7 @@ describe("auth & session", () => {
 
     renderApp({ initialEntries: ["/app/billing"] });
     expect(
-      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+      await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 
@@ -178,7 +183,7 @@ describe("auth & session", () => {
 
     renderApp({ initialEntries: ["/app/billing"] });
     expect(
-      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+      await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 });

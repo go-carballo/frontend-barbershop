@@ -45,12 +45,6 @@ export type ChartPoint = {
   activeUsers: number;
 };
 
-export type OverviewPayload = {
-  kpis: DashboardKpi[];
-  activity: ActivityItem[];
-  chart: ChartPoint[];
-};
-
 export type UserRecord = {
   id: string;
   name: string;

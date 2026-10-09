@@ -1,7 +1,13 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach } from "vitest";
 import { defaultSession } from "@/mocks/data";
+import { useOverviewFixture } from "@/test/overview-fixtures";
 import { renderApp } from "@/test/test-app";
+
+// The dashboard reads the real BarberShop endpoints, so landing on
+// /app/overview needs backend-shaped responses for them.
+beforeEach(() => useOverviewFixture());
 
 describe("app routing", () => {
   it("renders user settings and persists the selected theme", async () => {
@@ -44,18 +50,18 @@ describe("app routing", () => {
     await user.click(screen.getByRole("button", { name: /continue as avery stone/i }));
 
     expect(
-      await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 }),
+      await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 
-  it("renders the denser overview modules for an authenticated session", async () => {
+  it("renders the BarberShop dashboard modules for an authenticated session", async () => {
     window.localStorage.setItem("admin-dashboard-template:session", JSON.stringify(defaultSession));
 
     renderApp({ initialEntries: ["/app/overview"] });
 
-    expect(await screen.findByText(/monthly sales & revenue/i)).toBeInTheDocument();
-    expect(await screen.findByText(/recent transactions/i)).toBeInTheDocument();
-    expect(await screen.findByRole("heading", { name: /platform activity/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /turnos por mes/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /próximos turnos/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /actividad reciente/i })).toBeInTheDocument();
   });
 
   it("renders the users table for an authenticated session", async () => {

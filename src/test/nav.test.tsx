@@ -2,8 +2,13 @@ import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { navLeafItems, resolveNavTrail } from "@/components/layout/nav-items";
 import { defaultSession } from "@/mocks/data";
+import { useOverviewFixture } from "@/test/overview-fixtures";
 import { renderApp } from "@/test/test-app";
 import type { Session } from "@/types";
+
+// The dashboard reads the real BarberShop endpoints, so landing on
+// /app/overview needs backend-shaped responses for them.
+beforeEach(() => useOverviewFixture());
 
 const barberSession: Session = {
   user: {

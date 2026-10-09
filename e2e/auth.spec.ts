@@ -4,7 +4,7 @@ import { login } from "./helpers";
 test("signs in through the mock auth flow", async ({ page }) => {
   await login(page);
 
-  await expect(page.getByRole("heading", { name: /dashboard overview/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /resumen del panel/i })).toBeVisible();
 });
 
 test("signs in through the password form", async ({ page }) => {
@@ -15,5 +15,5 @@ test("signs in through the password form", async ({ page }) => {
   await page.getByLabel(/password/i).fill("supersecret");
   await page.getByRole("button", { name: /^sign in$/i }).click();
 
-  await expect(page.getByRole("heading", { name: /dashboard overview/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /resumen del panel/i })).toBeVisible();
 });

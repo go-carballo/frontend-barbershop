@@ -1,7 +1,12 @@
 import { screen } from "@testing-library/react";
 import { defaultSession } from "@/mocks/data";
+import { useOverviewFixture } from "@/test/overview-fixtures";
 import { renderApp } from "@/test/test-app";
 import type { Session } from "@/types";
+
+// The dashboard reads the real BarberShop endpoints, so landing on
+// /app/overview needs backend-shaped responses for them.
+beforeEach(() => useOverviewFixture());
 
 const barberSession: Session = {
   user: {
@@ -48,7 +53,7 @@ describe("role-based access control", () => {
     seed(barberSession);
     renderApp({ initialEntries: ["/app/users"] });
 
-    expect(await screen.findByText(/dashboard overview/i)).toBeInTheDocument();
+    expect(await screen.findByText(/resumen del panel/i)).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /^usuarios$/i })).not.toBeInTheDocument();
   });
 

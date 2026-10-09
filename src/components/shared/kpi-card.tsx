@@ -3,6 +3,7 @@ import {
   ArrowUpRight,
   DollarSign,
   FolderKanban,
+  type LucideIcon,
   TrendingUp,
   UserRoundPlus,
 } from "lucide-react";
@@ -13,6 +14,9 @@ import { cn } from "@/lib/utils";
 import type { DashboardKpi } from "@/types";
 
 const canRenderChart = typeof navigator === "undefined" || !/jsdom/i.test(navigator.userAgent);
+
+/** Fallback icon tone, matching the template's existing KPI palette. */
+const defaultTone = "bg-[rgba(59,130,246,0.12)] text-[var(--accent)]";
 
 const formatValue = (kpi: DashboardKpi) => {
   if (kpi.label === "ARR") {
@@ -56,7 +60,52 @@ const getMeta = (kpi: DashboardKpi) => {
   };
 };
 
-export const KpiCard = ({ kpi }: { kpi: DashboardKpi }) => {
+type KpiCardProps = {
+  /** Template demo shape, still used by the analytics and billing pages. */
+  kpi?: DashboardKpi;
+  /**
+   * Real-data shape used by the BarberShop dashboard: a pre-formatted title,
+   * value and hint instead of the demo's derived percentage and sparkline.
+   */
+  title?: string;
+  value?: string;
+  hint?: string;
+  icon?: LucideIcon;
+  tone?: string;
+};
+
+export const KpiCard = ({ kpi, title, value, hint, icon, tone }: KpiCardProps) => {
+  if (!kpi) {
+    const MetaIcon = icon ?? TrendingUp;
+    return (
+      <Card className="overflow-hidden">
+        <CardContent className="p-5">
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-[var(--foreground)]">{title}</p>
+                <p className="mt-2 text-[1.95rem] font-semibold leading-none tracking-[-0.05em] text-[var(--foreground)]">
+                  {value}
+                </p>
+              </div>
+              <span
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-lg",
+                  tone ?? defaultTone,
+                )}
+              >
+                <MetaIcon className="h-4 w-4" />
+              </span>
+            </div>
+            {hint ? (
+              <p className="truncate text-sm text-[var(--muted-foreground)]">{hint}</p>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const positive = kpi.change >= 0;
   const TrendIcon = positive ? ArrowUpRight : ArrowDownRight;
   const meta = getMeta(kpi);

@@ -49,12 +49,6 @@
     "language": "Language",
     "breadcrumb": "Breadcrumb"
   },
-  "overview": {
-    "eyebrow": "Overview",
-    "title": "Dashboard Overview",
-    "description": "Track revenue, acquisition, active work and platform activity in one place.",
-    "filters": "Filters"
-  },
   "login": {
     "welcomeTitle": "Welcome back",
     "subtitle": "Sign in to continue to the Admin Dash workspace",

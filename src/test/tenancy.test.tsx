@@ -3,8 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { TENANT_STORAGE_KEY } from "@/features/tenants/tenant-context";
 import { defaultSession } from "@/mocks/data";
+import { useOverviewFixture } from "@/test/overview-fixtures";
 import { server } from "@/test/server";
 import { renderApp } from "@/test/test-app";
+
+// The dashboard reads the real BarberShop endpoints, so landing on
+// /app/overview needs backend-shaped responses for them.
+beforeEach(() => useOverviewFixture());
 
 describe("multi-tenancy", () => {
   it("switches the active workspace and persists the choice", async () => {
@@ -13,7 +18,7 @@ describe("multi-tenancy", () => {
     window.localStorage.removeItem(TENANT_STORAGE_KEY);
     renderApp({ initialEntries: ["/app/overview"] });
 
-    await screen.findByText(/dashboard overview/i, {}, { timeout: 3000 });
+    await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 });
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /switch workspace/i })).toBeEnabled(),
     );

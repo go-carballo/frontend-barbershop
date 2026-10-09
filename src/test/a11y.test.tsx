@@ -1,10 +1,15 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultSession } from "@/mocks/data";
 import { makeAppointment, useAppointmentsFixture } from "@/test/appointments-fixtures";
+import { useOverviewFixture } from "@/test/overview-fixtures";
 import { renderApp } from "@/test/test-app";
+
+// The dashboard reads the real BarberShop endpoints, so landing on
+// /app/overview needs backend-shaped responses for them.
+beforeEach(() => useOverviewFixture());
 
 // jsdom signals belong to a different realm than Node fetch, so React Query
 // AbortSignals crash MSW's Request inside the test environment.
@@ -73,7 +78,7 @@ describe("accessibility", () => {
   it("overview page has no detectable violations", async () => {
     seedSession();
     const { container } = renderApp({ initialEntries: ["/app/overview"] });
-    await waitFor(() => expect(screen.getByText(/dashboard overview/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/resumen del panel/i)).toBeInTheDocument());
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
   });

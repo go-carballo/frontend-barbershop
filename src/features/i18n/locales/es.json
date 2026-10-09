@@ -49,12 +49,6 @@
     "language": "Idioma",
     "breadcrumb": "Ruta de navegación"
   },
-  "overview": {
-    "eyebrow": "Resumen",
-    "title": "Resumen del panel",
-    "description": "Sigue ingresos, adquisición, trabajo activo y actividad en un solo lugar.",
-    "filters": "Filtros"
-  },
   "login": {
     "welcomeTitle": "Bienvenido de nuevo",
     "subtitle": "Inicia sesión para continuar en el espacio Admin Dash",

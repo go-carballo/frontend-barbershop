@@ -1,6 +1,11 @@
 import { screen } from "@testing-library/react";
 import { defaultSession } from "@/mocks/data";
+import { useOverviewFixture } from "@/test/overview-fixtures";
 import { renderApp } from "@/test/test-app";
+
+// The dashboard reads the real BarberShop endpoints, so landing on
+// /app/overview needs backend-shaped responses for them.
+beforeEach(() => useOverviewFixture());
 
 const routes: { path: string; heading: RegExp }[] = [
   { path: "/app/analytics", heading: /reports and product health/i },
@@ -21,12 +26,13 @@ describe("module pages", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders overview bottom zone from live mock endpoints", async () => {
+  it("renders the BarberShop dashboard bottom zone from backend-shaped endpoints", async () => {
     window.localStorage.setItem("admin-dashboard-template:session", JSON.stringify(defaultSession));
     renderApp({ initialEntries: ["/app/overview"] });
 
-    expect(await screen.findByText(/q2 expansion won/i)).toBeInTheDocument();
-    expect(await screen.findByText(/northstar labs/i)).toBeInTheDocument();
-    expect(screen.getByText(/latest payments from the ledger/i)).toBeInTheDocument();
+    expect(await screen.findByText("Clientes totales")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Próximos turnos" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Actividad reciente" })).toBeInTheDocument();
+    expect(screen.getAllByText("Ana Pérez").length).toBeGreaterThan(0);
   });
 });

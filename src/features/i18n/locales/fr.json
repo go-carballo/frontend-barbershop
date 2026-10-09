@@ -49,12 +49,6 @@
     "language": "Langue",
     "breadcrumb": "Fil d'Ariane"
   },
-  "overview": {
-    "eyebrow": "Aperçu",
-    "title": "Aperçu du tableau de bord",
-    "description": "Suivez les revenus, l'acquisition, le travail actif et l'activité sur une seule page.",
-    "filters": "Filtres"
-  },
   "login": {
     "welcomeTitle": "Content de vous revoir",
     "subtitle": "Connectez-vous pour accéder à l'espace Admin Dash",

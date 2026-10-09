@@ -1,6 +1,5 @@
 import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, it } from "vitest";
-import { getOverviewRequest } from "@/features/overview/overview-api";
 import { updateSettingsRequest } from "@/features/settings/settings-api";
 import { getUsersRequest } from "@/features/users/users-api";
 import { server } from "@/test/server";
@@ -42,10 +41,5 @@ describe("api layer (http wrapper)", () => {
     };
     const result = await updateSettingsRequest(payload);
     expect(result.profile.companyName).toBe("Acme");
-  });
-
-  it("reads the dashboard overview payload", async () => {
-    const overview = await getOverviewRequest();
-    expect(overview.kpis.length).toBeGreaterThan(0);
   });
 });

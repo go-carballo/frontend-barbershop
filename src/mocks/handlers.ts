@@ -1,4 +1,5 @@
 import { delay, HttpResponse, http } from "msw";
+import { barbershopDemoHandlers } from "@/mocks/barbershop-handlers";
 import {
   analyticsPayload,
   apiKeysPayload,
@@ -8,7 +9,7 @@ import {
   integrationsPayload,
   mailPayload,
   notificationsPayload,
-  overviewPayload,
+  overviewChartPayload,
   profilePayload,
   settingsPayload,
   supportPayload,
@@ -60,6 +61,11 @@ const readQuery = (request: Request, key: string) =>
   new URL(request.url).searchParams.get(key)?.toLowerCase() ?? "";
 
 export const handlers = [
+  // BarberShop modules (customers, barbers, services, appointments). Demo-only:
+  // with a backend configured these paths are sent to NestJS and never reach
+  // these handlers; they only answer in pure-mock mode (tests, standalone demo).
+  ...barbershopDemoHandlers,
+
   // Auth
   // Demo-only sign-in. `/auth/login` is listed in REAL_API_ROUTES, so with a
   // backend configured this relative handler is never reached: the request is
@@ -91,9 +97,11 @@ export const handlers = [
   }),
 
   // Dashboard
+  // Demo series for the template's chart gallery; the BarberShop dashboard
+  // reads the real endpoints below instead.
   http.get("/api/dashboard/overview", async () => {
     await delay(320);
-    return HttpResponse.json(overviewPayload);
+    return HttpResponse.json(overviewChartPayload);
   }),
   http.get("/api/users", async ({ request }) => {
     await delay(260);
