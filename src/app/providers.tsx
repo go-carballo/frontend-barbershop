@@ -6,7 +6,6 @@ import { queryClient } from "@/app/query-client";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/features/auth/auth-context";
 import { I18nProvider } from "@/features/i18n";
-import { TenantProvider } from "@/features/tenants/tenant-context";
 import { ThemeProvider } from "@/features/theme/theme-context";
 
 const ReactQueryDevtools = import.meta.env.DEV
@@ -23,10 +22,8 @@ export const AppProviders = ({ children }: { children: ReactNode }) => (
         <I18nProvider>
           <ThemeProvider>
             <AuthProvider>
-              <TenantProvider>
-                {children}
-                <Toaster position="top-right" richColors />
-              </TenantProvider>
+              {children}
+              <Toaster position="top-right" richColors />
             </AuthProvider>
           </ThemeProvider>
         </I18nProvider>

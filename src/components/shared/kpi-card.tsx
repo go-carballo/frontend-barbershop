@@ -15,7 +15,7 @@ import type { DashboardKpi } from "@/types";
 
 const canRenderChart = typeof navigator === "undefined" || !/jsdom/i.test(navigator.userAgent);
 
-/** Fallback icon tone, matching the template's existing KPI palette. */
+/** Tono de icono predeterminado para los indicadores. */
 const defaultTone = "bg-[rgba(59,130,246,0.12)] text-[var(--accent)]";
 
 const formatValue = (kpi: DashboardKpi) => {
@@ -61,11 +61,10 @@ const getMeta = (kpi: DashboardKpi) => {
 };
 
 type KpiCardProps = {
-  /** Template demo shape, still used by the analytics and billing pages. */
   kpi?: DashboardKpi;
   /**
    * Real-data shape used by the BarberShop dashboard: a pre-formatted title,
-   * value and hint instead of the demo's derived percentage and sparkline.
+   * valor y detalle preformateados.
    */
   title?: string;
   value?: string;

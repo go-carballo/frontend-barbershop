@@ -11,9 +11,6 @@ const LoginPage = lazy(() =>
 const OverviewPage = lazy(() =>
   import("@/pages/overview-page").then((module) => ({ default: module.OverviewPage })),
 );
-const AnalyticsPage = lazy(() =>
-  import("@/pages/analytics-page").then((module) => ({ default: module.AnalyticsPage })),
-);
 const CustomersPage = lazy(() =>
   import("@/pages/customers-page").then((module) => ({ default: module.CustomersPage })),
 );
@@ -26,47 +23,8 @@ const ServicesPage = lazy(() =>
 const UsersPage = lazy(() =>
   import("@/pages/users-page").then((module) => ({ default: module.UsersPage })),
 );
-const TeamPage = lazy(() =>
-  import("@/pages/team-page").then((module) => ({ default: module.TeamPage })),
-);
-const BillingPage = lazy(() =>
-  import("@/pages/billing-page").then((module) => ({ default: module.BillingPage })),
-);
-const TransactionsPage = lazy(() =>
-  import("@/pages/transactions-page").then((module) => ({ default: module.TransactionsPage })),
-);
-const NotificationsPage = lazy(() =>
-  import("@/pages/notifications-page").then((module) => ({ default: module.NotificationsPage })),
-);
-const MailPage = lazy(() =>
-  import("@/pages/mail-page").then((module) => ({ default: module.MailPage })),
-);
 const AppointmentsPage = lazy(() =>
   import("@/pages/appointments-page").then((module) => ({ default: module.AppointmentsPage })),
-);
-const ProfilePage = lazy(() =>
-  import("@/pages/profile-page").then((module) => ({ default: module.ProfilePage })),
-);
-const UiKitPage = lazy(() =>
-  import("@/pages/ui-kit-page").then((module) => ({ default: module.UiKitPage })),
-);
-const DataTablesPage = lazy(() =>
-  import("@/pages/data-tables-page").then((module) => ({ default: module.DataTablesPage })),
-);
-const DataChartsPage = lazy(() =>
-  import("@/pages/data-charts-page").then((module) => ({ default: module.DataChartsPage })),
-);
-const SupportPage = lazy(() =>
-  import("@/pages/support-page").then((module) => ({ default: module.SupportPage })),
-);
-const IntegrationsPage = lazy(() =>
-  import("@/pages/integrations-page").then((module) => ({ default: module.IntegrationsPage })),
-);
-const SettingsPage = lazy(() =>
-  import("@/pages/settings-page").then((module) => ({ default: module.SettingsPage })),
-);
-const UserSettingsPage = lazy(() =>
-  import("@/pages/user-settings-page").then((module) => ({ default: module.UserSettingsPage })),
 );
 const NotFoundPage = lazy(() =>
   import("@/pages/not-found-page").then((module) => ({ default: module.NotFoundPage })),
@@ -74,7 +32,7 @@ const NotFoundPage = lazy(() =>
 
 const RouteFallback = () => (
   <div className="px-4 py-6">
-    <StatePanel kind="loading" title="Loading route" description="Preparing the dashboard view." />
+    <StatePanel kind="loading" title="Cargando vista" description="Preparando BarberShop." />
   </div>
 );
 
@@ -109,17 +67,9 @@ export const AppRouter = () => (
               </RoleRoute>
             }
           />
-          <Route path="/app/analytics" element={<AnalyticsPage />} />
-          <Route path="/app/mail" element={<MailPage />} />
-          <Route path="/app/mail/sent" element={<MailPage />} />
-          {/* Historic demo route; the appointment module now lives at /app/appointments. */}
           <Route path="/app/calendar" element={<Navigate to="/app/appointments" replace />} />
           <Route path="/app/appointments" element={<AppointmentsPage />} />
-          <Route path="/app/profile" element={<ProfilePage />} />
           <Route path="/app/404" element={<NotFoundPage embedded />} />
-          <Route path="/app/ui" element={<UiKitPage />} />
-          <Route path="/app/data/tables" element={<DataTablesPage />} />
-          <Route path="/app/data/charts" element={<DataChartsPage />} />
           <Route
             path="/app/users"
             element={
@@ -128,14 +78,6 @@ export const AppRouter = () => (
               </RoleRoute>
             }
           />
-          <Route path="/app/team" element={<TeamPage />} />
-          <Route path="/app/billing" element={<BillingPage />} />
-          <Route path="/app/transactions" element={<TransactionsPage />} />
-          <Route path="/app/notifications" element={<NotificationsPage />} />
-          <Route path="/app/support" element={<SupportPage />} />
-          <Route path="/app/integrations" element={<IntegrationsPage />} />
-          <Route path="/app/settings" element={<SettingsPage />} />
-          <Route path="/app/settings/user" element={<UserSettingsPage />} />
         </Route>
       </Route>
       <Route path="/" element={<Navigate to="/app/overview" replace />} />

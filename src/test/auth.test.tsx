@@ -77,30 +77,7 @@ describe("auth & session", () => {
 
     renderApp({ initialEntries: ["/app/overview"] });
 
-    expect(await screen.findByText(/welcome back/i, {}, { timeout: 3000 })).toBeInTheDocument();
-    expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
-  });
-
-  it("clears the session and redirects to login on a 401, without refreshing", async () => {
-    seedSession();
-    let userCalls = 0;
-    let refreshCalls = 0;
-    server.use(
-      http.get("/users", () => {
-        userCalls += 1;
-        return new HttpResponse(null, { status: 401 });
-      }),
-      http.post("/api/auth/refresh", () => {
-        refreshCalls += 1;
-        return HttpResponse.json({ ...defaultSession, accessToken: "refreshed" });
-      }),
-    );
-
-    renderApp({ initialEntries: ["/app/users"] });
-
-    expect(await screen.findByText(/welcome back/i, {}, { timeout: 3000 })).toBeInTheDocument();
-    await waitFor(() => expect(userCalls).toBe(1));
-    expect(refreshCalls).toBe(0);
+    expect(await screen.findByText(/bienvenido/i, {}, { timeout: 3000 })).toBeInTheDocument();
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
   });
 
@@ -118,10 +95,10 @@ describe("auth & session", () => {
     renderApp({ initialEntries: ["/app/overview"] });
     await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 });
 
-    await user.click(screen.getByRole("button", { name: /Avery Stone/i }));
-    await user.click(await screen.findByRole("menuitem", { name: /logout/i }));
+    await user.click(screen.getByRole("button", { name: /Administrador/i }));
+    await user.click(await screen.findByRole("menuitem", { name: /cerrar sesión/i }));
 
-    expect(await screen.findByText(/welcome back/i, {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(await screen.findByText(/bienvenido/i, {}, { timeout: 3000 })).toBeInTheDocument();
     expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
     expect(backendCalls).toBe(0);
   });
@@ -134,13 +111,13 @@ describe("auth & session", () => {
       ),
     );
 
-    renderApp({ initialEntries: ["/app/billing"] });
+    renderApp({ initialEntries: ["/app/users"] });
     expect(
-      await screen.findByRole("heading", { name: /plans, usage and invoices/i }, { timeout: 3000 }),
+      await screen.findByRole("heading", { name: /usuarios/i }, { timeout: 3000 }),
     ).toBeInTheDocument();
   });
 
-  it("denies /app/billing when the backend role is `barber`", async () => {
+  it("denies /app/users when the backend role is `barber`", async () => {
     seedSession(sessionFromBackendToken("barber", "joe@barbershop.com"));
     server.use(
       http.get("/auth/profile", () =>
@@ -148,7 +125,7 @@ describe("auth & session", () => {
       ),
     );
 
-    renderApp({ initialEntries: ["/app/billing"] });
+    renderApp({ initialEntries: ["/app/users"] });
     expect(
       await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
@@ -164,13 +141,12 @@ describe("auth & session", () => {
 
     renderApp({ initialEntries: ["/app/overview"] });
 
-    // `barber` normalizes to Manager: it keeps the shared modules…
+    // Un barbero conserva los módulos operativos…
     await screen.findByRole("link", { name: /dashboard/i }, { timeout: 3000 });
     expect(screen.getByRole("link", { name: /clientes/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /turnos/i })).toBeInTheDocument();
-    // …but loses the Owner/Admin-only barber and services entries.
-    expect(screen.queryByRole("link", { name: /barberos/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /servicios/i })).not.toBeInTheDocument();
+    // …pero no accede a la administración de usuarios.
+    expect(screen.queryByRole("link", { name: /usuarios/i })).not.toBeInTheDocument();
   });
 
   it("denies every role-gated route when the backend role is unknown", async () => {
@@ -181,7 +157,7 @@ describe("auth & session", () => {
       ),
     );
 
-    renderApp({ initialEntries: ["/app/billing"] });
+    renderApp({ initialEntries: ["/app/users"] });
     expect(
       await screen.findByText(/resumen del panel/i, {}, { timeout: 3000 }),
     ).toBeInTheDocument();

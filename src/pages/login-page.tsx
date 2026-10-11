@@ -10,8 +10,6 @@ import { demoPersona, type LoginMethod, rememberedUserStorage } from "@/features
 import { useAuth } from "@/features/auth/auth-context";
 import { HttpError, isBackendConfigured } from "@/lib/http";
 
-const REPO_URL = "https://github.com/tomtapia/admin-dashboard-template";
-
 export const LoginPage = () => {
   const { login } = useAuth();
   const { t } = useTranslation();
@@ -62,7 +60,7 @@ export const LoginPage = () => {
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--accent)] text-[var(--accent-foreground)]">
               <ShieldCheck className="h-4.5 w-4.5" aria-hidden="true" />
             </span>
-            <p className="text-xl font-medium tracking-[-0.02em]">Admin Dash</p>
+            <p className="text-xl font-medium tracking-[-0.02em]">BarberShop</p>
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("login.welcomeTitle")}</h1>
           <CardDescription>{t("login.subtitle")}</CardDescription>
@@ -102,15 +100,7 @@ export const LoginPage = () => {
         </CardContent>
         <CardFooter className="justify-center border-t border-dashed border-[var(--border)] p-6 pt-4">
           <p className="text-center text-xs text-[var(--muted-foreground)]">
-            {t("login.needAssistance")}{" "}
-            <a
-              href={REPO_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium text-[var(--accent)] hover:underline"
-            >
-              {t("login.helpCenter")}
-            </a>
+            ¿Necesitas ayuda? Comunícate con la administración de BarberShop.
           </p>
         </CardFooter>
       </Card>

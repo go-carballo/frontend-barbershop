@@ -11,7 +11,7 @@ test("signs in through the password form", async ({ page }) => {
   await page.goto("/login");
 
   await page.getByRole("button", { name: /switch or remove account/i }).click();
-  await page.getByLabel(/email/i).fill("avery@northstar.app");
+  await page.getByLabel(/email/i).fill("admin@barbershop.com");
   await page.getByLabel(/password/i).fill("supersecret");
   await page.getByRole("button", { name: /^sign in$/i }).click();
 

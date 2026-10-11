@@ -35,13 +35,8 @@ const isRealApiRoute = (path: string) =>
     return pathname === route || pathname.startsWith(`${route}/`);
   });
 
-let activeTenantId: string | null = null;
 let getAccessToken: (() => string | null) | null = null;
 let onUnauthorized: (() => void) | null = null;
-
-export const setActiveTenantId = (id: string | null) => {
-  activeTenantId = id;
-};
 
 /**
  * The backend has no refresh endpoint, so there is nothing to retry: a 401 on a
@@ -114,10 +109,6 @@ export const http = async <T>(input: RequestInfo | URL, init?: RequestInit): Pro
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
-  if (activeTenantId) {
-    headers["X-Tenant-Id"] = activeTenantId;
-  }
-
   const requestHeaders = new Headers(headers);
   if (init?.headers) {
     new Headers(init.headers).forEach((value, key) => {

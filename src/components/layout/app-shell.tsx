@@ -22,7 +22,7 @@ export const AppShell = () => {
   useEffect(() => {
     const trail = resolveNavTrail(location.pathname);
     const pageTitle = t(trail?.child?.title ?? trail?.item.title ?? "nav.overview");
-    document.title = `${pageTitle} · Admin Dash`;
+    document.title = `${pageTitle} · BarberShop`;
     setAnnouncement(pageTitle);
 
     const frame = window.requestAnimationFrame(() => {

@@ -1,14 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { NavGroupList } from "@/components/layout/nav-group-list";
 import { filterNavGroupsByRole, navGroups, resolveNavTrail } from "@/components/layout/nav-items";
-import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { CommandPalette } from "@/components/shared/command-palette";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,12 +23,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/features/auth/auth-context";
-import {
-  getNotificationsRequest,
-  markNotificationReadRequest,
-} from "@/features/notifications/notifications-api";
-import { cn } from "@/lib/utils";
-import type { NotificationItem } from "@/types";
 
 type TopbarProps = {
   collapsed: boolean;
@@ -42,26 +33,10 @@ export const Topbar = ({ collapsed, onToggleSidebar }: TopbarProps) => {
   const { session, logout } = useAuth();
   const { t } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const trail = resolveNavTrail(location.pathname);
   const currentItemTitle = trail?.child?.title ?? trail?.item.title ?? "nav.overview";
-
-  const notificationsQuery = useQuery<NotificationItem[]>({
-    queryKey: ["notifications"],
-    queryFn: getNotificationsRequest,
-  });
-  const notifications = notificationsQuery.data ?? [];
-  const unreadCount = notifications.filter((item) => !item.read).length;
-
-  const invalidateNotifications = () =>
-    queryClient.invalidateQueries({ queryKey: ["notifications"] });
-  const markRead = useMutation({
-    mutationFn: (id: string) => markNotificationReadRequest(id),
-    onSuccess: invalidateNotifications,
-  });
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -92,13 +67,10 @@ export const Topbar = ({ collapsed, onToggleSidebar }: TopbarProps) => {
             <div className="border-b border-[var(--border)] px-5 py-4">
               <DialogTitle className="text-base">{t("common.navigation")}</DialogTitle>
               <DialogDescription className="mt-1 text-sm text-[var(--muted-foreground)]">
-                Move through the admin template.
+                Navega por BarberShop.
               </DialogDescription>
             </div>
             <nav className="max-h-[70vh] space-y-5 overflow-y-auto p-4">
-              <div className="border-b border-[var(--border)] pb-5">
-                <WorkspaceSwitcher />
-              </div>
               <NavGroupList
                 groups={filterNavGroupsByRole(navGroups, session?.user.role)}
                 onNavigate={() => setMobileNavOpen(false)}
@@ -157,68 +129,6 @@ export const Topbar = ({ collapsed, onToggleSidebar }: TopbarProps) => {
       <div className="flex shrink-0 items-center gap-2 md:gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative hidden sm:inline-flex"
-              aria-label={
-                unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications, all read"
-              }
-            >
-              <Bell className="h-4 w-4" />
-              {unreadCount > 0 ? (
-                <span
-                  aria-hidden="true"
-                  className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--danger)] px-1 text-[9px] font-bold leading-none text-white"
-                >
-                  {unreadCount}
-                </span>
-              ) : null}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>
-              {unreadCount > 0 ? `${unreadCount} unread` : t("notifications.allCaughtUp")}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {notifications.slice(0, 4).map((item) => (
-              <DropdownMenuItem key={item.id} className="flex-col items-start gap-1" asChild>
-                <div>
-                  <div className="flex w-full items-center gap-2">
-                    <p className={cn("text-sm", item.read && "text-[var(--muted-foreground)]")}>
-                      {item.title}
-                    </p>
-                    {!item.read ? <Badge variant="default">New</Badge> : null}
-                    <span className="ml-auto text-xs text-[var(--muted-foreground)]">
-                      {item.triggeredAt}
-                    </span>
-                  </div>
-                  {!item.read ? (
-                    <button
-                      type="button"
-                      className="self-end text-xs font-medium text-[var(--accent)] underline-offset-2 hover:underline"
-                      onClick={() => markRead.mutate(item.id)}
-                    >
-                      Mark read
-                    </button>
-                  ) : null}
-                </div>
-              </DropdownMenuItem>
-            ))}
-            {notifications.length === 0 ? (
-              <p className="px-3 py-6 text-center text-sm text-[var(--muted-foreground)]">
-                Nothing here yet.
-              </p>
-            ) : null}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/app/notifications")}>
-              View all notifications
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
             <button
               type="button"
               className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 transition-colors hover:bg-[var(--surface-panel)]"
@@ -239,10 +149,7 @@ export const Topbar = ({ collapsed, onToggleSidebar }: TopbarProps) => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{session?.user.organization || "—"}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/app/settings/user")}>
-              {t("nav.userSettings")}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => void logout()}>{t("common.logout")}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => void logout()}>Cerrar sesión</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

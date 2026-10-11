@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { NavGroupList } from "@/components/layout/nav-group-list";
 import { filterNavGroupsByRole, navGroups } from "@/components/layout/nav-items";
-import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher";
 import { useAuth } from "@/features/auth/auth-context";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +17,9 @@ export const SidebarNav = ({ collapsed }: { collapsed: boolean }) => {
       )}
     >
       <div className={cn("mb-8 shrink-0", !collapsed && "px-2")}>
-        <WorkspaceSwitcher collapsed={collapsed} />
+        <p className={cn("text-lg font-bold tracking-tight", collapsed && "text-center text-sm")}>
+          BarberShop
+        </p>
       </div>
 
       <div className="relative min-h-0 flex-1">
@@ -36,19 +37,6 @@ export const SidebarNav = ({ collapsed }: { collapsed: boolean }) => {
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-[var(--sidebar)] to-transparent"
         />
-      </div>
-
-      <div className="mt-auto rounded-[0.9rem] border border-[var(--sidebar-border)] bg-[var(--sidebar-elevated)] p-4">
-        {!collapsed ? (
-          <>
-            <p className="text-xs font-medium text-[var(--sidebar-muted)]">Workspace status</p>
-            <p className="mt-2 text-sm text-[var(--sidebar-foreground)]">
-              Everything looks stable today.
-            </p>
-          </>
-        ) : (
-          <div className="h-10 rounded-xl bg-[var(--sidebar)]" />
-        )}
       </div>
     </aside>
   );

@@ -25,7 +25,7 @@ describe("login screen", () => {
     expect(
       await screen.findByRole("button", { name: /continue as avery stone/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText("avery@northstar.app")).toBeInTheDocument();
+    expect(screen.getByText("admin@barbershop.com")).toBeInTheDocument();
   });
 
   it("renders the remembered account from local storage", async () => {

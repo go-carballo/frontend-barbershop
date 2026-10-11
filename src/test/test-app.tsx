@@ -6,7 +6,6 @@ import { AppRouter } from "@/app/router";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/features/auth/auth-context";
 import { I18nProvider } from "@/features/i18n";
-import { TenantProvider } from "@/features/tenants/tenant-context";
 import { ThemeProvider } from "@/features/theme/theme-context";
 
 type RenderOptions = {
@@ -29,10 +28,8 @@ export const renderApp = ({ initialEntries = ["/login"] }: RenderOptions = {}) =
           <I18nProvider>
             <ThemeProvider>
               <AuthProvider>
-                <TenantProvider>
-                  <AppRouter />
-                  <Toaster />
-                </TenantProvider>
+                <AppRouter />
+                <Toaster />
               </AuthProvider>
             </ThemeProvider>
           </I18nProvider>

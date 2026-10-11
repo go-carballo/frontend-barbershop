@@ -68,8 +68,8 @@ export const rememberedUserStorage = {
 };
 
 export const demoPersona: RememberedUser = {
-  name: "Avery Stone",
-  email: "avery@northstar.app",
+  name: "Administrador",
+  email: "admin@barbershop.com",
 };
 
 /**
