@@ -32,6 +32,7 @@ const currency = new Intl.NumberFormat("es-AR", {
 });
 export function ServicesPage() {
   const { session } = useAuth();
+  const canManage = session?.user.role === "admin";
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [params, setParams] = useState<ServicesParams>({ page: 1, perPage: 10 });
@@ -95,35 +96,39 @@ export function ServicesPage() {
       header: "Estado",
       render: (row) => <StatusBadge status={row.isActive ? "Activo" : "Inactivo"} />,
     },
-    {
-      key: "actions",
-      header: "Acciones",
-      headerClassName: "text-right",
-      className: "text-right",
-      render: (row) => (
-        <div className="flex justify-end gap-2 whitespace-nowrap">
-          <Button variant="outline" size="sm" onClick={() => setForm({ service: row })}>
-            Editar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={status.isPending}
-            onClick={() => setStatusTarget(row)}
-          >
-            {row.isActive ? "Desactivar" : "Activar"}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={remove.isPending}
-            onClick={() => setDeleteTarget(row)}
-          >
-            Eliminar
-          </Button>
-        </div>
-      ),
-    },
+    ...(canManage
+      ? [
+          {
+            key: "actions",
+            header: "Acciones",
+            headerClassName: "text-right",
+            className: "text-right",
+            render: (row: Service) => (
+              <div className="flex justify-end gap-2 whitespace-nowrap">
+                <Button variant="outline" size="sm" onClick={() => setForm({ service: row })}>
+                  Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={status.isPending}
+                  onClick={() => setStatusTarget(row)}
+                >
+                  {row.isActive ? "Desactivar" : "Activar"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={remove.isPending}
+                  onClick={() => setDeleteTarget(row)}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
   const applySearch = () =>
     setParams((previous) => {
@@ -144,7 +149,11 @@ export function ServicesPage() {
         eyebrow="Servicios"
         title="Servicios"
         description="Gestiona el catálogo de servicios, precios y duraciones."
-        actions={<Button onClick={() => setForm({ service: null })}>Crear servicio</Button>}
+        actions={
+          canManage ? (
+            <Button onClick={() => setForm({ service: null })}>Crear servicio</Button>
+          ) : undefined
+        }
       />
       <SearchFilterBar
         value={search}
@@ -225,7 +234,7 @@ export function ServicesPage() {
           }}
         />
       )}
-      {form && (
+      {canManage && form && (
         <ServiceFormDialog
           service={form.service}
           pending={save.isPending}
@@ -239,25 +248,29 @@ export function ServicesPage() {
           }}
         />
       )}
-      <ConfirmDialog
-        open={Boolean(statusTarget)}
-        onOpenChange={(open) => !open && setStatusTarget(null)}
-        title={statusTarget?.isActive ? "Desactivar servicio" : "Activar servicio"}
-        description={`¿Cambiar el estado de ${statusTarget?.name ?? "este servicio"}?`}
-        confirmLabel="Confirmar"
-        cancelLabel="Cancelar"
-        onConfirm={() => statusTarget && !status.isPending && status.mutate(statusTarget)}
-      />
-      <ConfirmDialog
-        open={Boolean(deleteTarget)}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Eliminar servicio"
-        description={`¿Eliminar definitivamente ${deleteTarget?.name ?? "este servicio"}? Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
-        cancelLabel="Cancelar"
-        destructive
-        onConfirm={() => deleteTarget && !remove.isPending && remove.mutate(deleteTarget.id)}
-      />
+      {canManage && (
+        <ConfirmDialog
+          open={Boolean(statusTarget)}
+          onOpenChange={(open) => !open && setStatusTarget(null)}
+          title={statusTarget?.isActive ? "Desactivar servicio" : "Activar servicio"}
+          description={`¿Cambiar el estado de ${statusTarget?.name ?? "este servicio"}?`}
+          confirmLabel="Confirmar"
+          cancelLabel="Cancelar"
+          onConfirm={() => statusTarget && !status.isPending && status.mutate(statusTarget)}
+        />
+      )}
+      {canManage && (
+        <ConfirmDialog
+          open={Boolean(deleteTarget)}
+          onOpenChange={(open) => !open && setDeleteTarget(null)}
+          title="Eliminar servicio"
+          description={`¿Eliminar definitivamente ${deleteTarget?.name ?? "este servicio"}? Esta acción no se puede deshacer.`}
+          confirmLabel="Eliminar"
+          cancelLabel="Cancelar"
+          destructive
+          onConfirm={() => deleteTarget && !remove.isPending && remove.mutate(deleteTarget.id)}
+        />
+      )}
     </div>
   );
 }

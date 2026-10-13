@@ -1,7 +1,5 @@
 export const readApiBaseUrl = () => (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
 
-const API_BASE_URL = readApiBaseUrl();
-
 /**
  * True when the app points at a real backend (`VITE_API_BASE_URL` is set).
  * Read on every call so tests can stub the env before rendering the login page.
@@ -91,12 +89,13 @@ const resolveUrl = (input: RequestInfo | URL): RequestInfo | URL => {
   // Relative inputs stay relative on purpose: MSW matches them against the app
   // origin, so only the routes in REAL_API_ROUTES ever leave for the backend.
   if (
-    API_BASE_URL &&
+    readApiBaseUrl() &&
     typeof input === "string" &&
     !/^https?:\/\//.test(input) &&
     isRealApiRoute(input)
   ) {
-    return `${API_BASE_URL}${input.startsWith("/") ? "" : "/"}${input}`;
+    const apiBaseUrl = readApiBaseUrl();
+    return `${apiBaseUrl}${input.startsWith("/") ? "" : "/"}${input}`;
   }
   return input;
 };

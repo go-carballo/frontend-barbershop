@@ -27,6 +27,7 @@ const errorMessage = (error: unknown) =>
   error instanceof Error && error.message ? error.message : "Intenta nuevamente.";
 export function BarbersPage() {
   const { session } = useAuth();
+  const canManage = session?.user.role === "admin";
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [params, setParams] = useState<BarbersParams>({ page: 1, perPage: 10 });
@@ -89,35 +90,39 @@ export function BarbersPage() {
       header: "Estado",
       render: (row) => <StatusBadge status={row.isActive ? "Activo" : "Inactivo"} />,
     },
-    {
-      key: "actions",
-      header: "Acciones",
-      headerClassName: "text-right",
-      className: "text-right",
-      render: (row) => (
-        <div className="flex justify-end gap-2 whitespace-nowrap">
-          <Button variant="outline" size="sm" onClick={() => setForm({ barber: row })}>
-            Editar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={status.isPending}
-            onClick={() => setStatusTarget(row)}
-          >
-            {row.isActive ? "Desactivar" : "Activar"}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={remove.isPending}
-            onClick={() => setDeleteTarget(row)}
-          >
-            Eliminar
-          </Button>
-        </div>
-      ),
-    },
+    ...(canManage
+      ? [
+          {
+            key: "actions",
+            header: "Acciones",
+            headerClassName: "text-right",
+            className: "text-right",
+            render: (row: Barber) => (
+              <div className="flex justify-end gap-2 whitespace-nowrap">
+                <Button variant="outline" size="sm" onClick={() => setForm({ barber: row })}>
+                  Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={status.isPending}
+                  onClick={() => setStatusTarget(row)}
+                >
+                  {row.isActive ? "Desactivar" : "Activar"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={remove.isPending}
+                  onClick={() => setDeleteTarget(row)}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
   const applySearch = () =>
     setParams((previous) => {
@@ -138,7 +143,11 @@ export function BarbersPage() {
         eyebrow="Barberos"
         title="Barberos"
         description="Gestiona el equipo de barberos y sus especialidades."
-        actions={<Button onClick={() => setForm({ barber: null })}>Crear barbero</Button>}
+        actions={
+          canManage ? (
+            <Button onClick={() => setForm({ barber: null })}>Crear barbero</Button>
+          ) : undefined
+        }
       />
       <SearchFilterBar
         value={search}
@@ -219,7 +228,7 @@ export function BarbersPage() {
           }}
         />
       )}
-      {form && (
+      {canManage && form && (
         <BarberFormDialog
           barber={form.barber}
           pending={save.isPending}
@@ -233,25 +242,29 @@ export function BarbersPage() {
           }}
         />
       )}
-      <ConfirmDialog
-        open={Boolean(statusTarget)}
-        onOpenChange={(open) => !open && setStatusTarget(null)}
-        title={statusTarget?.isActive ? "Desactivar barbero" : "Activar barbero"}
-        description={`¿Cambiar el estado de ${statusTarget?.name ?? "este barbero"}?`}
-        confirmLabel="Confirmar"
-        cancelLabel="Cancelar"
-        onConfirm={() => statusTarget && !status.isPending && status.mutate(statusTarget)}
-      />
-      <ConfirmDialog
-        open={Boolean(deleteTarget)}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Eliminar barbero"
-        description={`¿Eliminar definitivamente a ${deleteTarget?.name ?? "este barbero"}? Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
-        cancelLabel="Cancelar"
-        destructive
-        onConfirm={() => deleteTarget && !remove.isPending && remove.mutate(deleteTarget.id)}
-      />
+      {canManage && (
+        <ConfirmDialog
+          open={Boolean(statusTarget)}
+          onOpenChange={(open) => !open && setStatusTarget(null)}
+          title={statusTarget?.isActive ? "Desactivar barbero" : "Activar barbero"}
+          description={`¿Cambiar el estado de ${statusTarget?.name ?? "este barbero"}?`}
+          confirmLabel="Confirmar"
+          cancelLabel="Cancelar"
+          onConfirm={() => statusTarget && !status.isPending && status.mutate(statusTarget)}
+        />
+      )}
+      {canManage && (
+        <ConfirmDialog
+          open={Boolean(deleteTarget)}
+          onOpenChange={(open) => !open && setDeleteTarget(null)}
+          title="Eliminar barbero"
+          description={`¿Eliminar definitivamente a ${deleteTarget?.name ?? "este barbero"}? Esta acción no se puede deshacer.`}
+          confirmLabel="Eliminar"
+          cancelLabel="Cancelar"
+          destructive
+          onConfirm={() => deleteTarget && !remove.isPending && remove.mutate(deleteTarget.id)}
+        />
+      )}
     </div>
   );
 }
