@@ -69,6 +69,10 @@
     "removeSavedAccount": "Eliminar cuenta guardada"
   },
   "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todas como leídas",
+    "empty": "No tenés notificaciones",
+    "viewAll": "Ver todas las notificaciones",
     "allCaughtUp": "Todo al día"
   },
   "userSettings": {

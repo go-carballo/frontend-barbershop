@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { NavGroupList } from "@/components/layout/nav-group-list";
 import { filterNavGroupsByRole, navGroups, resolveNavTrail } from "@/components/layout/nav-items";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { CommandPalette } from "@/components/shared/command-palette";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -127,6 +128,8 @@ export const Topbar = ({ collapsed, onToggleSidebar }: TopbarProps) => {
       </div>
 
       <div className="flex shrink-0 items-center gap-2 md:gap-3">
+        <NotificationBell />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

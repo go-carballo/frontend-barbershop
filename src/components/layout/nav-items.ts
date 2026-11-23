@@ -41,6 +41,7 @@ export const navGroups: NavGroup[] = [
         roles: ["admin", "barber", "receptionist"],
       },
       { title: "nav.appointments", href: "/app/appointments", icon: "Calendar" },
+      { title: "nav.notifications", href: "/app/notifications", icon: "Bell" },
     ],
   },
   {

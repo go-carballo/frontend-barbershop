@@ -26,6 +26,9 @@ const UsersPage = lazy(() =>
 const AppointmentsPage = lazy(() =>
   import("@/pages/appointments-page").then((module) => ({ default: module.AppointmentsPage })),
 );
+const NotificationsPage = lazy(() =>
+  import("@/pages/notifications-page").then((module) => ({ default: module.NotificationsPage })),
+);
 const NotFoundPage = lazy(() =>
   import("@/pages/not-found-page").then((module) => ({ default: module.NotFoundPage })),
 );
@@ -78,6 +81,7 @@ export const AppRouter = () => (
               </RoleRoute>
             }
           />
+          <Route path="/app/notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
       <Route path="/" element={<Navigate to="/app/overview" replace />} />

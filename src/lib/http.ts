@@ -24,6 +24,7 @@ export const REAL_API_ROUTES = [
   "/barbers",
   "/services",
   "/appointments",
+  "/notifications",
   "/users",
 ] as const;
 
