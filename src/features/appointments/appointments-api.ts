@@ -40,6 +40,8 @@ export type AppointmentListParams = {
   barberId?: string;
   serviceId?: string;
   appointmentDate?: string;
+  fromDate?: string;
+  toDate?: string;
   status?: AppointmentStatus;
 };
 
@@ -86,6 +88,8 @@ export const getAppointmentsRequest = (params: AppointmentListParams, signal?: A
   if (params.barberId) query.set("barberId", params.barberId);
   if (params.serviceId) query.set("serviceId", params.serviceId);
   if (params.appointmentDate) query.set("appointmentDate", params.appointmentDate);
+  if (params.fromDate) query.set("fromDate", params.fromDate);
+  if (params.toDate) query.set("toDate", params.toDate);
   if (params.status) query.set("status", params.status);
   return http<AppointmentsResponse>(`/appointments?${query}`, { signal });
 };

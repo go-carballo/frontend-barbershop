@@ -114,7 +114,12 @@ export function AppointmentsPage() {
   const queryClient = useQueryClient();
 
   const [view, setView] = useState<View>("list");
-  const [params, setParams] = useState<AppointmentListParams>({ page: 1, perPage: 10 });
+  const [params, setParams] = useState<AppointmentListParams>({
+    page: 1,
+    perPage: 10,
+    fromDate: undefined,
+    toDate: undefined,
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<{ appointment: Appointment | null; date?: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Appointment | null>(null);
@@ -211,6 +216,8 @@ export function AppointmentsPage() {
       params.barberId ||
       params.serviceId ||
       params.appointmentDate ||
+      params.fromDate ||
+      params.toDate ||
       params.status,
   );
 
@@ -349,12 +356,42 @@ export function AppointmentsPage() {
               }))}
               onChange={(value) => updateFilter({ serviceId: value || undefined })}
             />
+            <div className="flex flex-col gap-1.5 sm:flex-row">
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="appointments-filter-from"
+                  className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]"
+                >
+                  Desde
+                </Label>
+                <Input
+                  id="appointments-filter-from"
+                  type="date"
+                  value={params.fromDate ?? ""}
+                  onChange={(event) => updateFilter({ fromDate: event.target.value || undefined })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="appointments-filter-to"
+                  className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]"
+                >
+                  Hasta
+                </Label>
+                <Input
+                  id="appointments-filter-to"
+                  type="date"
+                  value={params.toDate ?? ""}
+                  onChange={(event) => updateFilter({ toDate: event.target.value || undefined })}
+                />
+              </div>
+            </div>
             <div className="space-y-1.5">
               <Label
                 htmlFor="appointments-filter-date"
                 className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]"
               >
-                Fecha
+                Fecha exacta
               </Label>
               <Input
                 id="appointments-filter-date"
@@ -377,6 +414,8 @@ export function AppointmentsPage() {
                     barberId: undefined,
                     serviceId: undefined,
                     appointmentDate: undefined,
+                    fromDate: undefined,
+                    toDate: undefined,
                     status: undefined,
                   }))
                 }

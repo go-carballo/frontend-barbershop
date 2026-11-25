@@ -50,6 +50,11 @@ import { useAuth } from "@/features/auth/auth-context";
 import { barbersKeys, getBarbersRequest } from "@/features/barbers/barbers-api";
 import { customersKeys, getCustomersRequest } from "@/features/customers/customers-api";
 import {
+  type DashboardStats,
+  dashboardKeys,
+  getDashboardStatsRequest,
+} from "@/features/dashboard/dashboard-api";
+import {
   appointmentsByMonth,
   appointmentsByStatus,
   DASHBOARD_APPOINTMENTS_FETCH_SIZE,
@@ -124,6 +129,11 @@ export const OverviewPage = () => {
     queryFn: () =>
       getServicesRequest({ page: 1, perPage: DASHBOARD_DIRECTORY_FETCH_SIZE, isActive: "true" }),
   });
+  // Dashboard stats from backend real API (mocked via MSW in dev)
+  const dashboardQuery = useQuery({
+    queryKey: dashboardKeys.stats(userId),
+    queryFn: ({ signal }) => getDashboardStatsRequest(signal),
+  });
   // Exact count for "Turnos de hoy": the endpoint filters on the business date.
   const todayQuery = useQuery({
     queryKey: appointmentsKeys.list({ page: 1, perPage: 1, appointmentDate: todayIso }, userId),
@@ -156,7 +166,11 @@ export const OverviewPage = () => {
     customersQuery.isLoading ||
     barbersQuery.isLoading ||
     servicesQuery.isLoading ||
-    todayQuery.isLoading;
+    todayQuery.isLoading ||
+    dashboardQuery.isLoading;
+
+  const revenue = dashboardQuery.data?.estimatedRevenue ?? 0;
+  const upcomingCount = dashboardQuery.data?.upcomingAppointments ?? 0;
 
   const metricCards: MetricCard[] = [
     {
@@ -190,6 +204,14 @@ export const OverviewPage = () => {
       hint: `Hoy es ${formatLongBusinessDate(todayIso)}`,
       icon: CalendarCheck,
       tone: kpiTones.success,
+    },
+    {
+      id: "ingresos-estimados",
+      title: "Ingresos estimados",
+      value: revenue > 0 ? `$${numberFormatter.format(revenue)}` : "—",
+      hint: "De turnos completados",
+      icon: Sparkles,
+      tone: kpiTones.accent,
     },
   ];
 
@@ -376,7 +398,10 @@ export const OverviewPage = () => {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.7fr_0.8fr]">
-        <SectionCard title="Próximos turnos" description="Turnos agendados a partir de hoy.">
+        <SectionCard
+          title="Próximos turnos"
+          description={`Faltan ${upcomingCount} turnos esta semana.`}
+        >
           {upcoming.length === 0 ? (
             <EmptyState
               title="No hay turnos próximos"
@@ -418,6 +443,34 @@ export const OverviewPage = () => {
                 </div>
               </div>
             </div>
+          )}
+        </SectionCard>
+
+        <SectionCard tone="secondary" title="Ingresos por servicio">
+          {canRenderChart && dashboardQuery.data?.serviceBreakdown.length > 0 ? (
+            <div className="space-y-3">
+              {dashboardQuery.data.serviceBreakdown.map((svc) => (
+                <div
+                  key={svc.serviceName}
+                  className="flex items-center justify-between rounded-lg bg-[var(--surface-panel)] p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-[var(--foreground)]">
+                      {svc.serviceName}
+                    </p>
+                    <p className="text-xs text-[var(--muted-foreground)]">{svc.total} turnos</p>
+                  </div>
+                  <p className="text-sm font-semibold text-[var(--accent)]">
+                    ${numberFormatter.format(svc.revenue)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="Sin ingresos registrados"
+              description="Los ingresos aparecerán cuando se completen turnos."
+            />
           )}
         </SectionCard>
 

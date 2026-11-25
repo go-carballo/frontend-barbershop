@@ -276,4 +276,55 @@ export const barbershopDemoHandlers = [
       );
     return HttpResponse.json(paginate(rows, request));
   }),
+  http.get("*/appointments/dashboard/stats", () => {
+    // Compute demo stats from appointment data
+    const today = new Date().toISOString().slice(0, 10);
+    const upcoming = demoAppointments.filter(
+      (a) =>
+        a.appointmentDate >= today &&
+        a.appointmentDate <=
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    ).length;
+    const todayCount = demoAppointments.filter((a) => a.appointmentDate === today).length;
+    const completed = demoAppointments.filter((a) => a.status === "completed");
+    const estimatedRevenue = completed.reduce((sum, a) => sum + (a.service?.price ?? 0), 0);
+    const statusCounts = [
+      {
+        status: "scheduled",
+        total: demoAppointments.filter((a) => a.status === "scheduled").length,
+      },
+      {
+        status: "confirmed",
+        total: demoAppointments.filter((a) => a.status === "confirmed").length,
+      },
+      {
+        status: "completed",
+        total: demoAppointments.filter((a) => a.status === "completed").length,
+      },
+      {
+        status: "cancelled",
+        total: demoAppointments.filter((a) => a.status === "cancelled").length,
+      },
+    ];
+    const serviceBreakdown = Object.entries(
+      demoAppointments.reduce(
+        (acc, a) => {
+          const name = a.service?.name ?? "Unknown";
+          acc[name] = acc[name] || { total: 0, revenue: 0 };
+          acc[name].total++;
+          acc[name].revenue += a.service?.price ?? 0;
+          return acc;
+        },
+        {} as Record<string, { total: number; revenue: number }>,
+      ),
+    ).map(([serviceName, { total, revenue }]) => ({ serviceName, total, revenue }));
+
+    return HttpResponse.json({
+      todayAppointments: todayCount,
+      upcomingAppointments: upcoming,
+      estimatedRevenue,
+      statusCounts,
+      serviceBreakdown,
+    });
+  }),
 ];

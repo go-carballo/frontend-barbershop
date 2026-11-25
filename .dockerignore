@@ -1,0 +1,30 @@
+# Dependency cache
+node_modules
+
+# Build output
+dist
+.vite
+
+# Dev
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Tests
+playwright-report
+test-results
+
+# Misc
+.DS_Store
+*.md
+*.log

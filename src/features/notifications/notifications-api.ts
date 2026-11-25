@@ -44,29 +44,21 @@ export const notificationsKeys = {
 
 /* ---- Request helpers ---- */
 
-/** Fetch paginated list of notifications for a target (user, customer, or barber). */
+/** Fetch paginated list of notifications. Target is derived from the JWT, not query params. */
 export const getNotificationsRequest = (
-  targetType: "user" | "customer" | "barber",
-  targetId: string,
+  _targetType: "user" | "customer" | "barber",
+  _targetId: string,
   page = 1,
   perPage = 20,
   signal?: AbortSignal,
-) =>
-  http<NotificationListResponse>(
-    `/notifications?targetType=${targetType}&targetId=${targetId}&page=${page}&perPage=${perPage}`,
-    { signal },
-  );
+) => http<NotificationListResponse>(`/notifications?page=${page}&perPage=${perPage}`, { signal });
 
-/** Fetch unread count for a target. */
+/** Fetch unread count. Target is derived from the JWT, not query params. */
 export const getUnreadCountRequest = (
-  targetType: "user" | "customer" | "barber",
-  targetId: string,
+  _targetType: "user" | "customer" | "barber",
+  _targetId: string,
   signal?: AbortSignal,
-) =>
-  http<UnreadCountResponse>(
-    `/notifications/unread/count?targetType=${targetType}&targetId=${targetId}`,
-    { signal },
-  );
+) => http<UnreadCountResponse>(`/notifications/unread/count`, { signal });
 
 /** Mark a single notification as read. */
 export const markNotificationAsReadRequest = (notificationId: string, signal?: AbortSignal) =>

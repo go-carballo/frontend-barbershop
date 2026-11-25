@@ -1,7 +1,8 @@
 import { Bell, MailOpen } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -175,6 +176,22 @@ export const NotificationBell = () => {
 
   const markRead = useMarkNotificationAsRead();
   const onAppointmentChange = useNotificationToast(userId);
+
+  // Track previous unread count to detect new notifications on poll
+  const prevUnreadCountRef = useRef<number | undefined>(undefined);
+
+  // Show toast when unread count increases (new notification arrived)
+  useEffect(() => {
+    if (prevUnreadCountRef.current !== undefined && unreadCount > prevUnreadCountRef.current) {
+      const delta = unreadCount - prevUnreadCountRef.current;
+      toast("Notificación nueva", {
+        description:
+          delta === 1 ? "Tenés una notificación nueva" : `Tenés ${delta} notificaciones nuevas`,
+        duration: 4000,
+      });
+    }
+    prevUnreadCountRef.current = unreadCount;
+  }, [unreadCount]);
 
   // Polling effect — invalidate queries periodically
   useEffect(() => {
